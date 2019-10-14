@@ -1,0 +1,209 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>一个清单应用的开发记录.Day20 | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571021225243">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571021225243" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              一个清单应用的开发记录.Day20
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/olDYgCR5I" class="post-tag">
+                  # 开发记录
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="我觉的有必要说下为什么要开发一个清单应用">我觉的有必要说下为什么要开发一个清单应用。</h1>
+<p>大概在一个月前，那时我正在做一个外包的项目。我身兼数职，项目经理，产品经理，前端开发人员都是我一个人，同时作为乙方我还要和甲方，后端，ui设计师沟通，我的生活和工作被打的支离破碎。刚开始还会出现任务丢失的情况，之前沟通好的内容，我却把他们给忘掉了。</p>
+<p>在这个时间，我在图书馆遇到了一本书《为什么精英人士都是清单控》。这本书列举出了很多为什么要写清单的原因以及教人写清单的例子。我之前是没有记录清单的习惯的， 这本书给了我很大的启发。我决定改变自己从列清单开始。</p>
+<p>我先说一下我的需求有哪些。</p>
+<ol>
+<li>清单集，也可以称之为清单列表，承载一条条的清单。清单集用以表示不同类型清单的集合，比如我在开发时需要在不同的项目之前切换，我的不同项目就是一个清单集。</li>
+<li>单条清单，要有标题，备注，优先级，标签，子清单，最好还有附件的功能（附件的功能对于我来说可有可无）<br>
+我来解释一下这些功能的用处。</li>
+</ol>
+<p><strong>标题</strong>，一条清单没有标题，那么这条清单的存在的意义就不存在，有标题才可以称之为一条清单。</p>
+<p><strong>备注</strong>，简单的清单可能没有必要写备注，对于简单的清单来说，例如“买5个苹果”，标题足以解释一切。稍微复杂的，比如“去拿快递”，可能就需要备注一下，因为我要拿的是一个玻璃杯子，我需要备注一个“轻拿轻放”。这个就是备注的作用所在。</p>
+<p><strong>优先级</strong>，标记这清单的优先级，决定执行的优先顺序，也可以作为一个筛选的条件。</p>
+<p><strong>标签</strong>，标签的功能是对清单集的补充，即我希望在另一个维度 上对清单进行分类。比如同时开发几个项目，我需要把开发项目放在不同的清单集的同时又想检索我的所有开发清单。</p>
+<p><strong>子清单</strong>，这对我来说是较为重要的，因为我要对任务进行拆分，拆分不可避免地要设置子清单，而子清单又需要拆分，即无限级的子清单拆分。</p>
+<p><strong>附件</strong>，把一些必要的内容加入清单中。</p>
+<ol start="3">
+<li>提醒功能，在我看来，清单分为两种。一种是即时性比较强的，比如任务类的，强调的是在某个时间节点前必须完成某项任务。另一种是记录类的，比如旅游时的必备物品清单，记录了旅游时要记录的东西，比如购物清单，记录了要购买的东西。<br>
+对于第一种类型来说，提醒功能十分有必要，对于第二种就没有什么必要的了。</li>
+<li>筛选功能，可以通过优先级，标签对清单进行筛选。</li>
+</ol>
+<p>我尝试了很多清单软件，嘀嗒清单，水滴清单，Todoist，To-Do。他们确实很好，但是却在一些地方有不能够满足我的需要。</p>
+<ul>
+<li>To-Do，这个是Windows出品的应用，它的UI是我最喜欢的了，可以用精致来形容。<img src="http://yanxuan.nosdn.127.net/12deedd26c7973ad59846e37229bba5c.png" alt="UTOOLS1561349588217.png"></li>
+</ul>
+<p>从功能上来看，也是较为完备的，同时也在Win，Mac OS，IOS，Android都有客户端。缺点是筛选功能比较弱，没有标签和优先级的功能，也不能进行无限极子清单拆分。</p>
+<ul>
+<li>Todoist，老牌的todo应用。同样也是多端完备。他的一个优点是语义化日期提醒。比如“提醒我周日去机场”，就能建立一个清单，并自动设置好提醒，还有一个就是无限极子清单，这点我比较喜欢。缺点同样是明显的，没有备注，没有标签功能，并不是说没有，而是标签功能需要收费，它应该作为基础功能来提供，我愿意为高级的功能付费，而为这种功能付费我是不愿意的。除了这一点，Todoist是极为优秀的。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://yanxuan.nosdn.127.net/13506f672f0bff803c6532dfb9208221.png" alt="UTOOLS1561349861618.png"></figure>
+<ul>
+<li>嘀嗒清单，国产的老牌清单应用，同样的是多端完备。如果嘀嗒清单能够加上无限子清单功能，那么它就是我心目中最完美的清单应用了。我也愿意为嘀嗒的高级功能，比如换肤，多端同步，无上限的清单列表进行付费。</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="http://yanxuan.nosdn.127.net/6a4b6d51dfbb2f5ac82bc1694ff0e29d.png" alt="UTOOLS1561349884050.png"></figure>
+<ul>
+<li>水滴清单，小清新，界面极简，同样的，功能也只是够用，没有多端，没有优先级，没有子清单，没法修改内容。作为一个极简清单应用，他是足够的。<img src="http://yanxuan.nosdn.127.net/1b663ae559297593619fb592d5f21f27.png" alt="UTOOLS1561349906552.png"></li>
+</ul>
+<p>在尝试了这几个清单应用之后，我决定做一个出来。</p>
+<p>我明确我的目标就是我上面列出的那些。<br>
+当然还有一些不一样的地方。<br>
+比如说，在我看来，清单上有一些比较通用的知识，特别是在某些场景下面，比如菜谱，我更加指的是买菜的菜谱，我喜欢做菜，不过我经常为做某样菜而需要准备什么食材而头疼，繁多的食材会让我忘记某些东西，这就是一个通用的知识。我去云南旅游的时候被晒的蜕皮，我们也做了功课，只是忘记了要买一个帽子，我希望有一个清单来告诉我，你都需要做些什么。这些事情都很简单，只是我的经验缺失而已。我的愿景是，有一个平台可以来做这么一件事情，帮助每个人可以更加方便获取已有的清单。</p>
+<p>于是我就开始做了。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%88%91%E8%A7%89%E7%9A%84%E6%9C%89%E5%BF%85%E8%A6%81%E8%AF%B4%E4%B8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E6%B8%85%E5%8D%95%E5%BA%94%E7%94%A8">我觉的有必要说下为什么要开发一个清单应用。</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/flutter-dong-hua-he-ji-1">
+              <h3 class="post-title">
+                Flutterwidget动画合集（1）
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

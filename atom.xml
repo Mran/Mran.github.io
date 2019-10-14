@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mran.github.io</id>
     <title>Gridea</title>
-    <updated>2019-10-14T02:34:23.642Z</updated>
+    <updated>2019-10-14T02:49:50.985Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mran.github.io"/>
     <link rel="self" href="https://mran.github.io/atom.xml"/>
@@ -10,6 +10,45 @@
     <logo>https://mran.github.io/images/avatar.png</logo>
     <icon>https://mran.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[Flutter动画widget合集（2）]]></title>
+        <id>https://mran.github.io/post/flutter-dong-hua-widget-he-ji-2</id>
+        <link href="https://mran.github.io/post/flutter-dong-hua-widget-he-ji-2">
+        </link>
+        <updated>2019-10-14T02:44:31.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[《一个清单》开发日记.DAY50]]></title>
+        <id>https://mran.github.io/post/lesslessyi-ge-qing-dan-greatergreater-kai-fa-ri-ji-day50</id>
+        <link href="https://mran.github.io/post/lesslessyi-ge-qing-dan-greatergreater-kai-fa-ri-ji-day50">
+        </link>
+        <updated>2019-10-14T02:43:40.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[一个清单应用的开发记录.Day20]]></title>
+        <id>https://mran.github.io/post/yi-ge-qing-dan-ying-yong-de-kai-fa-ji-lu-day20</id>
+        <link href="https://mran.github.io/post/yi-ge-qing-dan-ying-yong-de-kai-fa-ji-lu-day20">
+        </link>
+        <updated>2019-10-14T02:43:09.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Flutterwidget动画合集（1）]]></title>
+        <id>https://mran.github.io/post/flutter-dong-hua-he-ji-1</id>
+        <link href="https://mran.github.io/post/flutter-dong-hua-he-ji-1">
+        </link>
+        <updated>2019-10-14T02:36:14.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[实现ViewPager的不同滑动效果]]></title>
+        <id>https://mran.github.io/post/shi-xian-viewpager-de-bu-tong-hua-dong-xiao-guo</id>
+        <link href="https://mran.github.io/post/shi-xian-viewpager-de-bu-tong-hua-dong-xiao-guo">
+        </link>
+        <updated>2019-10-14T02:34:54.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="给viewpager滑动加一个动画">给ViewPager滑动加一个动画.</h2>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="给viewpager滑动加一个动画">给ViewPager滑动加一个动画.</h2>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[使用Glide来自定义加载数据过程]]></title>
         <id>https://mran.github.io/post/shi-yong-glide-lai-zi-ding-yi-jia-zai-shu-ju-guo-cheng</id>
@@ -53,6 +92,13 @@
 ]]></summary>
         <content type="html"><![CDATA[<p>这是Retrofit系列教程的第二章.本文将向你演示如何使用Retrofit来进行用户名和密码的基本认证.</p>
 ]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Retrofit （0）-Getting Started and Create an Android Client]]></title>
+        <id>https://mran.github.io/post/retrofit-0-getting-started-and-create-an-android-client</id>
+        <link href="https://mran.github.io/post/retrofit-0-getting-started-and-create-an-android-client">
+        </link>
+        <updated>2019-10-14T02:26:33.000Z</updated>
     </entry>
     <entry>
         <title type="html"><![CDATA[使用Intellij IDEA 编写一个Android Studio插件]]></title>

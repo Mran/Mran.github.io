@@ -1,0 +1,359 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retrofit （0）-Getting Started and Create an Android Client | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571021225243">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571021225243" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Retrofit （0）-Getting Started and Create an Android Client
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>快速了解Retrofit</p>
+<h3 id="什么是retrofit">什么是Retrofit</h3>
+<p>Retrofit的官方介绍是</p>
+<blockquote>
+<p><em>A type-safe REST client for Android and Java</em></p>
+</blockquote>
+<p>一个用于Android和Java的类型安全的REST客户端<br>
+你可以通过注解的方式来构建HTTP请求,可置换的URL参数并且支持默认的查询参数.除此之外,它还支持多部分请求体和文件上传.</p>
+<h3 id="怎样去定义一个请求">怎样去定义一个请求</h3>
+<p>请通过查看在<a href="http://square.github.io/retrofit/#api-declaration">Retrofit官网</a>的API文档来了解怎么构造请求.你就可以找到所有重要的信息.</p>
+<h3 id="准备一个安卓项目">准备一个安卓项目</h3>
+<p>好了,现在我们进入实践环节.首先在你的IDE里打开一个安卓项目,我们更喜欢使用Gradle来作为构建系统,当然你也可以是用Maven.</p>
+<p>###设置依赖:Gradle or Maven<br>
+现在我们设置Retrofit的依赖.选择一个构建系统然后在<code>pom.xml</code>或是<code>build.gradle</code>里设置依赖.当我们运行以下命令来构建我们的代码时,构建系统会自动下载依赖的库.<br>
+####Retrofit1.9<br>
+<strong>pom.xml</strong></p>
+<pre><code class="language-xml">&lt;dependency&gt;  
+    &lt;groupId&gt;com.squareup.retrofit&lt;/groupId&gt;
+    &lt;artifactId&gt;retrofit&lt;/artifactId&gt;
+    &lt;version&gt;1.9.0&lt;/version&gt;
+&lt;/dependency&gt;  
+&lt;dependency&gt;  
+    &lt;groupId&gt;com.squareup.okhttp&lt;/groupId&gt;
+    &lt;artifactId&gt;okhttp&lt;/artifactId&gt;
+    &lt;version&gt;2.7.2&lt;/version&gt;
+&lt;/dependency&gt; 
+</code></pre>
+<p><strong>build.gradle</strong></p>
+<pre><code>dependencies {  
+    // Retrofit &amp; OkHttp
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp:okhttp:2.7.2'
+}
+</code></pre>
+<p>####Retrofit2<br>
+如果你正在使用Retrofit2,你应该使用下面的依赖配置<br>
+<strong>pom.xml</strong></p>
+<pre><code>&lt;dependency&gt;  
+    &lt;groupId&gt;com.squareup.retrofit2&lt;/groupId&gt;
+    &lt;artifactId&gt;retrofit&lt;/artifactId&gt;
+    &lt;version&gt;2.1.0&lt;/version&gt;
+&lt;/dependency&gt;  
+&lt;dependency&gt;  
+    &lt;groupId&gt;com.squareup.retrofit2&lt;/groupId&gt;
+    &lt;artifactId&gt;converter-gson&lt;/artifactId&gt;
+    &lt;version&gt;2.1.0&lt;/version&gt;
+&lt;/dependency&gt; 
+</code></pre>
+<p><strong>build.gradle</strong></p>
+<pre><code>dependencies {  
+    // Retrofit &amp; OkHttp
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+}
+</code></pre>
+<p>Retrofit2已经默认使用了OKhttp来作为网络层并且已经集成了OkHttp.你不再需要额外的在你的项目里设置OkHttp的依赖,除非你有特殊版本需求.<br>
+至此,你的项目已经做好使用Retrofit的准备了.现在我们开始创建一个持久的安卓API/HTTP客户端.<br>
+###可持续的安卓客户端<br>
+在研究现有的Retrofit客户端时,我发现了<a href="https://github.com/bkiers/retrofit-oauth/tree/master/src/main/java/nl/bigo/retrofitoauth">example repository of Bart Kiers</a>.事实上,它只是一个使用Retrofit进行OAuth认证的例子.然而,它具备了构建一个可持续的安卓客户端所需要的基础原理.这就是为什么我们要使用它来作为一个好的的起点,并且我们将会在以后的文章中用更好的认证方式拓展它.</p>
+<p>下面这个类定义了我们的安卓客户端的基础:<strong>ServiceGenerator</strong>.<br>
+###Service Generator<br>
+<strong>Service Generator</strong>是我们的API/HTTP客户端的核心.当前的代码只定义了一个方法,用来对给定的类或者接口创建一个基本的REST适配器.<br>
+####Retrofit1.9</p>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;http://your.api-base.url&quot;;
+
+    private static RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint(API_BASE_URL)
+                .setClient(new OkClient(new OkHttpClient()));
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        RestAdapter adapter = builder.build();
+        return adapter.create(serviceClass);
+    }
+}
+</code></pre>
+<p>####Retrofit2</p>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;http://your.api-base.url&quot;;
+
+    private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+    private static Retrofit.Builder builder =
+            new Retrofit.Builder()
+                    .baseUrl(API_BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create());
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        Retrofit retrofit = builder.client(httpClient.build()).build();
+        return retrofit.create(serviceClass);
+    }
+}
+</code></pre>
+<p><code>ServiceGenerator</code>类使用了Retrofit的<code>RestAdapter</code>构建器来创建一个新的指定了API base url 的REST客户端.比如,Girhub的API base url 是<code>https://api.github.com/</code>.<code>serviceClass</code>为这个API请求定义一个注解类或者是接口.下面将展示一些Retrofit的常见用法和如何定义一个典型的客户端.<br>
+###Json Mapping<br>
+Retrofit1.9默认使用了谷歌的GSON.你需要做的只是根据响应来构建一个类然后响应就会被自动解析.</p>
+<p>如果使用的是Retrofit2,你需要为你的<code>Retrofit</code>对象添加一个指定的转换器.现在要想使用GSON,你就需要把下面的代码添加到<code>build.gradle</code>文件中.</p>
+<pre><code>compile 'com.squareup.retrofit2:converter-gson:2.1.0'  
+</code></pre>
+<p>在你的Retrofit对象构建器中使用<code>.addConverterFactory(GsonConverterFactory.create())</code>就可以使用GSON来作为默认的JSON解析器了.</p>
+<h3 id="使用rrtrofit">使用Rrtrofit</h3>
+<p>现在,我们来看一个例子,在这个例子里我们定义了一个REST客户端来向Github请求数据.首先,我们需要创建一个接口和定义需要的方法.<br>
+####GitHub Client<br>
+下面的代码定义了<code>GitHubClient</code>和一个用来请求一个库的参与者列表的方法.它演示了在Retrofit里使用参数替换的方法(路径中的{owner}和{repo}将会被给定的变量给替换)</p>
+<h5 id="retrofit19">Retrofit1.9</h5>
+<pre><code class="language-java">public interface GitHubClient {  
+    @GET(&quot;/repos/{owner}/{repo}/contributors&quot;)
+    List&lt;Contributor&gt; contributors(
+        @Path(&quot;owner&quot;) String owner,
+        @Path(&quot;repo&quot;) String repo
+    );
+}
+</code></pre>
+<p>#####Retrofit2</p>
+<pre><code class="language-java">public interface GitHubClient {  
+    @GET(&quot;/repos/{owner}/{repo}/contributors&quot;)
+    Call&lt;List&lt;Contributor&gt;&gt; contributors(
+        @Path(&quot;owner&quot;) String owner,
+        @Path(&quot;repo&quot;) String repo
+    );
+}
+</code></pre>
+<p>下面定义了一个类<code>Contributor</code>.这个类包含了解析响应数据的必须格式.</p>
+<pre><code>static class Contributor {  
+    String login;
+    int contributions;
+}
+</code></pre>
+<p>为了对应JSON映射,<code>GitHubClient</code>定义了一个返回<code>List&lt;Contributor&gt;</code>类型的<code>contributors</code>方法.Retrofit确保正确地映射得到的服务器响应,前提是响应内容要和给定的类要匹配.<br>
+####API Example Request<br>
+下面的代码演示了如何在你的客户端里实例化<code>ServiceGenerator</code>.它是<a href="https://github.com/square/retrofit/tree/master/samples/src/main/java/com/example/retrofit">Retrofit github-client example</a>的改进版本.</p>
+<p>当你使用这个例子的时候,你需要自己在<code>ServiceGenerator</code>里把base url改成<code>&quot;https://api.github.com&quot;</code>.另一选择是创建一个<code>createService</code>方法,使得其可以接受两个参数:客户端类型和base url.<br>
+#####Retrofit1.9</p>
+<pre><code>public static void main(String... args) {  
+    // Create a very simple REST adapter which points the GitHub API endpoint.
+    GitHubClient client = ServiceGenerator.createService(GitHubClient.class);
+
+    // Fetch and print a list of the contributors to this library.
+    List&lt;Contributor&gt; contributors =
+        client.contributors(&quot;fs_opensource&quot;, &quot;android-boilerplate&quot;);
+
+    for (Contributor contributor : contributors) {
+        System.out.println(
+                contributor.login + &quot; (&quot; + contributor.contributions + &quot;)&quot;);
+    }
+}
+</code></pre>
+<p>#####Retrofit2</p>
+<pre><code>public static void main(String... args) {  
+    // Create a very simple REST adapter which points the GitHub API endpoint.
+    GitHubClient client = ServiceGenerator.createService(GitHubClient.class);
+
+    // Fetch and print a list of the contributors to this library.
+    Call&lt;List&lt;Contributor&gt;&gt; call =
+        client.contributors(&quot;fs_opensource&quot;, &quot;android-boilerplate&quot;);
+
+    try {
+        List&lt;Contributor&gt; contributors = call.execute().body();
+    } catch (IOException e) {
+        // handle errors
+    }
+
+    for (Contributor contributor : contributors) {
+        System.out.println(
+                contributor.login + &quot; (&quot; + contributor.contributions + &quot;)&quot;);
+    }
+}
+</code></pre>
+<p>参考资料:</p>
+<ul>
+<li><a href="http://square.github.io/retrofit/">Retrofit Project Homepage</a></li>
+<li><a href="http://square.github.io/retrofit/#api-declaration">Retrofit API declaration documentation</a></li>
+<li>Retrofit based <a href="https://github.com/bkiers/retrofit-oauth/tree/master/src/main/java/nl/bigo/retrofitoauth">authentication client</a>by Bart Kiers</li>
+<li><a href="https://github.com/square/retrofit/tree/master/samples">Retrofit Examples</a><br>
+原文链接https://futurestud.io/tutorials/retrofit-getting-started-and-android-client<br>
+完</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFretrofit">什么是Retrofit</a></li>
+<li><a href="#%E6%80%8E%E6%A0%B7%E5%8E%BB%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E8%AF%B7%E6%B1%82">怎样去定义一个请求</a></li>
+<li><a href="#%E5%87%86%E5%A4%87%E4%B8%80%E4%B8%AA%E5%AE%89%E5%8D%93%E9%A1%B9%E7%9B%AE">准备一个安卓项目</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8rrtrofit">使用Rrtrofit</a><br>
+*
+<ul>
+<li><a href="#retrofit19">Retrofit1.9</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/shi-yong-intellij-idea-bian-xie-yi-ge-android-studio-cha-jian">
+              <h3 class="post-title">
+                使用Intellij IDEA 编写一个Android Studio插件
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

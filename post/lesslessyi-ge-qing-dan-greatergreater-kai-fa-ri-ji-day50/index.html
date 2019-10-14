@@ -1,0 +1,262 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>《一个清单》开发日记.DAY50 | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571021225243">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571021225243" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              《一个清单》开发日记.DAY50
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/olDYgCR5I" class="post-tag">
+                  # 开发记录
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h3 id="名字">名字</h3>
+<p>我把app的名字确定下来了，就叫《一个清单》。</p>
+<h3 id="图标">图标</h3>
+<h4 id="构建思路">构建思路</h4>
+<p>花了一个下午的时间想app的图标，取了<strong>一个</strong>和<strong>清单</strong>这两个元素。<br>
+用阿拉伯数字<strong>1</strong>来表示<strong>一个</strong>，使用清单的抽象画法表示<strong>清单</strong>。在结构上，使用了3D的结构，<strong>清单</strong>隐藏在<strong>1</strong>之后，代表，清单只需要一个。</p>
+<h4 id="动手实现">动手实现</h4>
+<p>在我使用了Win10自带的<strong>画图3D</strong>、<strong>3D Builder</strong>、<strong>PhotoShop</strong>一通操作之后，做了一个自己还算满意的图标。</p>
+<h4 id="导出数字1的3d模型">导出数字1的3D模型</h4>
+<figure data-type="image" tabindex="1"><img src="http://blogimg.topmini.cn/FmCSStWTa3LP9Ox9Be4x98CJEsXm" alt="画图3D"></figure>
+<h4 id="在3d-builder中组合">在3D Builder中组合</h4>
+<figure data-type="image" tabindex="2"><img src="http://blogimg.topmini.cn/FsMV1FQktlUB6JNlU-1qhuhIbpMO" alt="3D Builder"></figure>
+<h4 id="最终的成品">最终的成品</h4>
+<figure data-type="image" tabindex="3"><img src="https://i.loli.net/2019/07/16/5d2d527542b8e17114.png" alt="image.png"></figure>
+<p>虽然没有达到我心目中的程度，但也算满意。</p>
+<h3 id="功能介绍">功能介绍</h3>
+<h4 id="1-主界面">1. 主界面</h4>
+<p>尽量保持主界面的简洁。只在右下角放置一个输入的FlatBotton。我在这个按钮上放置了一个羽毛笔的图标，仔细观察下，这个羽毛笔是会动的。<br>
+<img src="http://blogimg.topmini.cn/Frxxpu9dMa3bUPgpM2ubF-b6kNXW" alt="主界面"></p>
+<p>清单记录以列表的形式呈现，在详细模式下能够显示单条清单记录的标签，日期，和备注。子清单下可以记录无限级的子清单。属于树状结构。</p>
+<figure data-type="image" tabindex="4"><img src="http://blogimg.topmini.cn/Fk3SUtln2_XEAeWjmRa00sma-qNb" alt="记录列表"></figure>
+<p>右上角的菜单按钮是对清单快速编辑的功能。</p>
+<figure data-type="image" tabindex="5"><img src="http://blogimg.topmini.cn/Ft_mnNSEQo6mWf_-3hmJFt8ZC_hh" alt="右上角菜单"></figure>
+<p>标签编辑</p>
+<figure data-type="image" tabindex="6"><img src="http://blogimg.topmini.cn/FqZa-DGYTFeboQ6zuITr7iV7x8lX" alt="标签编辑"></figure>
+<p>清单排序</p>
+<figure data-type="image" tabindex="7"><img src="http://blogimg.topmini.cn/Fjb4cvQ_56NxhT8swHK4V0CNtRg5" alt="清单排序"></figure>
+<h4 id="2添加一条记录">2.添加一条记录</h4>
+<p>可以选择日期，优先级，和添加标签。</p>
+<figure data-type="image" tabindex="8"><img src="http://blogimg.topmini.cn/FhZrUjB7NStS3ploIbUKcc6KnC1c" alt="device-2019-07-16-121214"></figure>
+<h4 id="3-侧栏">3. 侧栏</h4>
+<p>用户系统的入口<br>
+添加新的清单页。<br>
+清单广场的入口<br>
+标签的管理和筛选<br>
+清单页的入口</p>
+<figure data-type="image" tabindex="9"><img src="http://blogimg.topmini.cn/Fo4vzWK-QCNtpxtx7joBorknUWNL" alt="侧边抽屉"></figure>
+<p>添加标签</p>
+<figure data-type="image" tabindex="10"><img src="http://blogimg.topmini.cn/Fv4I1utGXMIjlK9tuGFaAvQ0T887" alt=""></figure>
+<p>标签筛选</p>
+<figure data-type="image" tabindex="11"><img src="http://blogimg.topmini.cn/FkYWzJP1lrNq2RzFf4jdhIRz6eC6" alt=""></figure>
+<h4 id="4-清单广场">4. 清单广场</h4>
+<p>这个功能是清单的核心功能，也是我想做的和其他清单app都不一样的一个功能。</p>
+<p>在我看来清单知识属于简单，易组织，但是分散，可复用和改造性强的知识。</p>
+<p>我举个例子，菜谱购买清单，包含的主要是各种食材。购买食材时按照在广场中已有的清单购买，节省自己组织一个购物清单的精力。</p>
+<p>旅游物品清单,我完全可以看各种攻略来制作去某地需要带的物品清单，制作比较花费精力，但这种清单每个人做出来可能都是类似的。<br>
+而这就是清单广场所要做的。把清单知识重复利用起来，帮助到更多需要的人。</p>
+<figure data-type="image" tabindex="12"><img src="http://blogimg.topmini.cn/FsWyAtlGyRIiqElVRdd9D0mueYMh" alt="清单广场"></figure>
+<h4 id="5同步功能">5.同步功能。</h4>
+<p>目前只有android一个端，所以不能叫做同步，应该是云端存储。目前没有对存储的数量做限制。</p>
+<h2 id="下一步的计划">下一步的计划</h2>
+<p>一是上架到酷安应用市场，在v2ex发布一下，看有没有用户使用。</p>
+<p>二是制作一些种子清单，这个可能是一个比较长期的功能。</p>
+<p>三是在功能上继续完善，使它脱离了清单广场之后依旧是一个好用的app。</p>
+<p>四是全平台的客户端，Android，Win，mac，ios。正是为了实现这目标，我使用了flutter，现在有了Android的,其余的工作量会小一些。</p>
+<p>但是也有可能根本就没人用<br>
+最坏的打算是这个产品根本无人问津，我整理下代码做出个开源的项目。</p>
+<h2 id="总结">总结</h2>
+<p>这是我成为独立开发者的一次尝试，看自己有没有做一个产品的能力，从一个小的点出发，做出有一点点价值的产品。</p>
+<p>说实话，刚开始做产品是一时的冲劲，也带着逃离当时的迷茫和焦虑状态的想法。</p>
+<p>那段时间失业和失恋，抑郁情绪缠绕着我。我清楚只靠我自己是走不出来的，我得做点什么转移自己的注意力才行。</p>
+<p>记得那天我和陈师傅还有几个朋友聊天，说道我在做什么，我告诉他我想做这个产品。我说我觉得现在的清单应用不太好用，想自己做一个。他当时就很激动，“我也觉得这些清单应用都不好用，你做出来，我给你当种子用户！”。</p>
+<p>我是一向对自己不够自信的，我的预想是我说完大家会提出一堆我还没想清楚的问题。他当时说的话和激动的语气，让我坚信我做的产品会有人用，起码有两个人会用。</p>
+<p>如今第一版已经做出来了，但是我现在已经没有刚开始做这个app的信心了，支撑我做下来的是我不想做个产品半途而废罢了。有个产品出来也算对我这段时间的不务正业做个交代。</p>
+<p>是推广和维护开发，还是承认自己还没有成为独立开发者的能力，找工作养活自己。这成了我新的焦虑和迷茫。</p>
+<p>通过做这个东西我倒是学到了不少的东西。go，flutter,界面设计。最重要的是，它让我从那段最迷茫和焦虑的状态里走出来了。感谢陈师傅，感谢自己。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%90%8D%E5%AD%97">名字</a></li>
+<li><a href="#%E5%9B%BE%E6%A0%87">图标</a>
+<ul>
+<li><a href="#%E6%9E%84%E5%BB%BA%E6%80%9D%E8%B7%AF">构建思路</a></li>
+<li><a href="#%E5%8A%A8%E6%89%8B%E5%AE%9E%E7%8E%B0">动手实现</a></li>
+<li><a href="#%E5%AF%BC%E5%87%BA%E6%95%B0%E5%AD%971%E7%9A%843d%E6%A8%A1%E5%9E%8B">导出数字1的3D模型</a></li>
+<li><a href="#%E5%9C%A83d-builder%E4%B8%AD%E7%BB%84%E5%90%88">在3D Builder中组合</a></li>
+<li><a href="#%E6%9C%80%E7%BB%88%E7%9A%84%E6%88%90%E5%93%81">最终的成品</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D">功能介绍</a>
+<ul>
+<li><a href="#1-%E4%B8%BB%E7%95%8C%E9%9D%A2">1. 主界面</a></li>
+<li><a href="#2%E6%B7%BB%E5%8A%A0%E4%B8%80%E6%9D%A1%E8%AE%B0%E5%BD%95">2.添加一条记录</a></li>
+<li><a href="#3-%E4%BE%A7%E6%A0%8F">3. 侧栏</a></li>
+<li><a href="#4-%E6%B8%85%E5%8D%95%E5%B9%BF%E5%9C%BA">4. 清单广场</a></li>
+<li><a href="#5%E5%90%8C%E6%AD%A5%E5%8A%9F%E8%83%BD">5.同步功能。</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%B8%8B%E4%B8%80%E6%AD%A5%E7%9A%84%E8%AE%A1%E5%88%92">下一步的计划</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/yi-ge-qing-dan-ying-yong-de-kai-fa-ji-lu-day20">
+              <h3 class="post-title">
+                一个清单应用的开发记录.Day20
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

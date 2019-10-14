@@ -1,0 +1,496 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flutter动画widget合集（2） | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571021225243">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571021225243" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Flutter动画widget合集（2）
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/J8dmawfv0" class="post-tag">
+                  # Flutter
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>Flutter动画widget合集2</p>
+<p>包含的比较多，但是都比较零散，有以下几个部分。<br>
+<strong>AnimatedCrossFade</strong><br>
+<strong>AnimatedOpacity</strong><br>
+<strong>AnimatedPadding</strong><br>
+<strong>AnimatedSize</strong><br>
+<strong>AnimatedAlign</strong><br>
+<strong>AnimatedSwitcher</strong><br>
+<strong>AnimatedPositioned</strong><br>
+<strong>AnimatedIcon</strong></p>
+<h3 id="animatedcrossfade">AnimatedCrossFade</h3>
+<p>这个控件的效果是在两个控件切换时进行显示上的过渡。<br>
+控件内需要有两个widget，一个firstChild，一个secondChild，通过crossFadeState控制显示哪个child，并在切换时进行渐隐渐显的效果。</p>
+<pre><code> void _animating() {
+    setState(() {
+    //状态切换
+      status = !status;
+    });
+}
+ GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedCrossFade(
+                  firstChild: Container(
+                    width: 200,
+                    height: 200,
+                    child: Text(
+                      &quot;第一个子widget&quot;,
+                      style: TextStyle(
+                          backgroundColor: Colors.deepOrange, fontSize: 30),
+                    ),
+                  ),
+                  secondChild: Text(
+                    &quot;第二个子widget&quot;,
+                    style: TextStyle(
+                        backgroundColor: Colors.blueAccent, fontSize: 30),
+                  ),
+                  //用于控制显示哪个widget
+                  crossFadeState: status
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  duration: Duration(milliseconds: 500),
+                ),
+              ),
+            ),
+</code></pre>
+<p>两个childWidget在切换时的过渡效果，那些辅助线是我开启了Debug paint才显示的，可以忽略掉。</p>
+<figure data-type="image" tabindex="1"><img src="http://blogimg.topmini.cn/Fir4-Y-Bsq3R7vfJpnGb7OS1xZL4" alt="AnimatedCrossFade"></figure>
+<h3 id="animatedopacity">AnimatedOpacity</h3>
+<p>控件透明度动画， 在opacity的值发生改后自动对childWidget进行透明度动画。</p>
+<pre><code>void _animating() {
+    setState(() {
+    //状态切换
+      status = !status;
+    });
+}
+ GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedOpacity(
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      color: Colors.deepOrange,
+                      child: Text(
+                        &quot;透明度动画演示&quot;,
+                        style: TextStyle(fontSize: 40.0),
+                      ),
+                    ),
+                    //在opacity的值发生改后自动进行透明度动画
+                    opacity: status ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 500)),
+              ),
+            ),
+</code></pre>
+<p>AnimatedOpacity内childWidget的透明度发生了改变</p>
+<figure data-type="image" tabindex="2"><img src="http://blogimg.topmini.cn/FpRiIdmFzx0abNrvQX5EUztTODJQ" alt="AnimatedOpacity"></figure>
+<h3 id="animatedpadding">AnimatedPadding</h3>
+<p>可以改变子控件的padding的动画,和对AnimateContainer的padding修改时的动画效果一样</p>
+<pre><code>void _animating() {
+    setState(() {
+    //状态切换
+      status = !status;
+    });
+}
+  GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: Container(
+                //外部我用了紫色背景
+                  color: Colors.deepPurpleAccent,
+                  child: AnimatedPadding(
+                  //改变的是Text的padding
+                    child: Text(
+                      &quot;padding动画演示&quot;,
+                      style: TextStyle(fontSize: 40.0),
+                    ),
+                    duration: Duration(milliseconds: 500),
+                    padding: EdgeInsets.all(status ? 50 : 0.0),
+                  ),
+                ),
+              ),
+            ),
+</code></pre>
+<p>可以看到因为padding的改变，外层的Container被撑大了</p>
+<figure data-type="image" tabindex="3"><img src="http://blogimg.topmini.cn/FlBvPRSTGKkPpSfipRZC4K8yzx-Z" alt="AnimatedPadding"></figure>
+<h3 id="animatedsize">AnimatedSize</h3>
+<p>这个控件的用意是，当子控件的大小发生变化时会有一个动画。不过目前（2019.7.25）这个控件显示的是有问题的。</p>
+<p>如果你想使用的话，推荐Animatecontainer的方式进行控件大小的改变</p>
+<pre><code>  GestureDetector(
+              onTap: _animating,
+              child: AnimatedSize(
+                child: Container(
+                  color: Colors.deepPurpleAccent,
+                  //对高度进行了演示。
+                  height: status ? 60 : 150,
+                  child: Text(
+                    &quot;AnimatedSize动画演示&quot;,
+                    style: TextStyle(fontSize: 40.0),
+                  ),
+                ),
+                duration: Duration(milliseconds: 500),
+                //注意这个，要在state里width TickerProviderStateMixin
+                vsync: this,
+              ),
+            ),
+</code></pre>
+<p>可以看到，变大时候时候是有动画的，但是变小的时候，没有期望中的动画。更多信息可以在issue中看到。<br>
+<a href="https://github.com/flutter/flutter/issues/21384">https://github.com/flutter/flutter/issues/21384</a></p>
+<figure data-type="image" tabindex="4"><img src="http://blogimg.topmini.cn/Fv_2bqOaMbPAHkMo9ze3RccgwLcA" alt="AnimatedSize"></figure>
+<h3 id="animatedalign">AnimatedAlign</h3>
+<p>对控件的对齐方式进行动画</p>
+<pre><code>GestureDetector(
+          onTap: _animating,
+          child: AnimatedAlign(
+          //中心对齐和中心靠右对齐
+            alignment: status ? Alignment.center : Alignment.centerRight,
+            duration: Duration(milliseconds: 500),
+            child: Container(
+              color: Colors.deepPurpleAccent,
+              child: Text(
+                &quot;AnimatedAlign动画演示&quot;,
+                style: TextStyle(fontSize: 40.0),
+              ),
+            ),
+          ),
+        ),
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="http://blogimg.topmini.cn/FjdDpyUs9052ZEInPC9zwquhx1bp" alt="AnimatedAlign"></figure>
+<h3 id="animatedswitcher">AnimatedSwitcher</h3>
+<pre><code> void _animating() {
+    setState(() {
+      switchSize++;
+      status = !status;
+    });
+  }
+ GestureDetector(
+          onTap: _animating,
+          child: AnimatedSwitcher(
+            //进行自定义的切换动画
+            transitionBuilder: (Widget child, Animation&lt;double&gt; animation) {
+              return ScaleTransition(child: child, scale: animation);
+            },
+            //如果childWidget的key发生的变动，就会触发动画，这里是Text和Container的切换，二者的key自然是不同的，如果同时Text，则要注意给Text设置不同的key
+            child: status
+                ? Text(
+                    &quot;AnimatedSwitcher动画演示${switchSize}&quot;,
+                    style: TextStyle(fontSize: 40.0),
+                  )
+                : Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.deepOrange,
+                  ),
+            duration: Duration(milliseconds: 500),
+          ),
+        )
+</code></pre>
+<p>这个是在Text和Container切换的动画，也即上面代码的效果<br>
+<img src="http://blogimg.topmini.cn/FhC8aLjO5mVcr29fMwuAU2NvY-aA" alt="AnimatedSwitcher3"></p>
+<p>这个是在不同的Text直接切换的动画，注意我设置了不同的Text的值。</p>
+<figure data-type="image" tabindex="6"><img src="http://blogimg.topmini.cn/FrvMjH-OPOCF8GOmtcaijJQKTOC0" alt="AnimatedSwitcher2"></figure>
+<h3 id="animatedpositioned">AnimatedPositioned</h3>
+<p>可以对控件的位置进行动画。但是有一些限制。</p>
+<ol>
+<li>父Widget必须是Stack</li>
+<li>在水平维度上有left，right，width，这三者必须有一个值为null</li>
+<li>在垂直维度上有top，bottom，height，这三者必须有一个值为null、<br>
+同样的这个动画也可以用AnimateContainer来实现。</li>
+</ol>
+<pre><code> GestureDetector(
+          onTap: _animating,
+          child: Stack(
+            children: &lt;Widget&gt;[
+              AnimatedPositioned(
+                top: status ? 50 : 100,
+                height: status ? 50 : 100,
+                left: status ? 50 : 100,
+                child: Container(
+                  color: Colors.deepPurpleAccent,
+                  child: Text(
+                    &quot;AnimatedPositioned动画演示${switchSize}&quot;,
+                    style: TextStyle(fontSize: 30.0),
+                  ),
+                ),
+                duration: Duration(milliseconds: 500),
+              ),
+            ],
+          ),
+        ),
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="http://blogimg.topmini.cn/FlhiKRpffpUhR4aHaWXA7t9h48vV" alt="AnimatedPositioned"></figure>
+<h3 id="animatedicon">AnimatedIcon</h3>
+<p>AnimatedIcon,动画图标</p>
+<pre><code>  @override
+  void initState() {
+    super.initState();
+    _controller =
+        //同样要使所在的State with TickerProviderStateMixin
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+  }
+  void _animating() {
+    setState(() {
+      if (status) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+      status = !status;
+    });
+  }
+
+GestureDetector(
+          onTap: _animating,
+          child: Wrap(
+            children: &lt;Widget&gt;[
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.arrow_menu,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.menu_arrow,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.close_menu,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.menu_close,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.home_menu,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.menu_home,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.list_view,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.view_list,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.ellipsis_search,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.search_ellipsis,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.add_event,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.event_add,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.pause_play,
+                progress: _controller,
+              ),
+              AnimatedIcon(
+                size: 100,
+                icon: AnimatedIcons.play_pause,
+                progress: _controller,
+              ),
+            ],
+          ),
+        ),
+
+</code></pre>
+<p>这里我把，所有官方的AnimatedIcon列出来的，这个实际上还是Path实现的。</p>
+<figure data-type="image" tabindex="8"><img src="http://blogimg.topmini.cn/Fj7lUBZhdbldoWq44EQJta3CJtWr" alt="AnimatedIcon"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#animatedcrossfade">AnimatedCrossFade</a></li>
+<li><a href="#animatedopacity">AnimatedOpacity</a></li>
+<li><a href="#animatedpadding">AnimatedPadding</a></li>
+<li><a href="#animatedsize">AnimatedSize</a></li>
+<li><a href="#animatedalign">AnimatedAlign</a></li>
+<li><a href="#animatedswitcher">AnimatedSwitcher</a></li>
+<li><a href="#animatedpositioned">AnimatedPositioned</a></li>
+<li><a href="#animatedicon">AnimatedIcon</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/lesslessyi-ge-qing-dan-greatergreater-kai-fa-ri-ji-day50">
+              <h3 class="post-title">
+                《一个清单》开发日记.DAY50
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

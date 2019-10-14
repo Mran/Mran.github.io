@@ -1,0 +1,429 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flutterwidget动画合集（1） | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571021225243">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571021225243" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Flutterwidget动画合集（1）
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/J8dmawfv0" class="post-tag">
+                  # Flutter
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="flutter动画合集1">Flutter动画合集(1)</h2>
+<p>Flutter 可以很方便的实现比较炫酷的动画。<br>
+分为两个部分，动画widget和动画控制</p>
+<h2 id="动画widget">动画widget</h2>
+<h3 id="animatedcontainer">AnimatedContainer</h3>
+<p>在这个控件中可以方便的给它的<code>width</code>宽,<code>height</code>高,<code>color</code>背景色,<code>padding</code>内边距,<code>margin</code>外边距,<code>transform</code>位置添加动画，</p>
+<h4 id="宽高动画">宽高动画</h4>
+<pre><code>//标记动画的状态
+ bool status = true;
+//宽高的变量
+ double _height = 100.0;
+ double _width = 100.0;
+//通过改变宽高的值，响应动画处理，这个效果是控件的高度和宽度发生变化。如图1
+ void _animating() {
+    setState(() {
+      if (status) {
+        _height = 100.0;
+        _width = 100.0;
+      } else {
+        _height = 200.0;
+        _width = 200.0;
+      }
+      status = !status;
+    });
+  }
+//这是处理点击事件的widget
+GestureDetector(
+              //响应点击事件
+              onTap: _animating,
+              child: AnimatedContainer(
+              //当height或者width的值发生变化时，自动进行动画
+                height: animationHeight,
+                width: animationWidth,
+                color: Colors.amber,
+                duration: Duration(milliseconds: 300),
+                child: Container(),
+              ),
+            ),
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://blogimg.topmini.cn/Fo7Q71baT4fjUqN1k17QUKxfQzuw" alt="图1：响应宽高变化的动画"></figure>
+<h4 id="颜色动画">颜色动画</h4>
+<pre><code>//背景颜色的变化
+Color _color = Colors.amber;
+void _animating() {
+    setState(() {
+    //直接改变颜色
+      if (status) {
+        _color = Colors.amber;
+      } else {
+        _color = Colors.blue;
+      }
+      status = !status;
+    });
+ }
+  
+     GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedContainer(
+                  height: _height,
+                  width: _width,
+                  //加入了颜色的变化
+                  color: _color,
+                  duration: Duration(milliseconds: 300),
+                  child: Container( ),
+                ),
+              ),
+            ),
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="http://blogimg.topmini.cn/FmJ690yZ0O8yLbwbN6fpn6PtzJoP" alt="图2：颜色和宽高同时变化"></figure>
+<h4 id="padding-内边距">padding 内边距</h4>
+<pre><code>void _animating() {
+    setState(() {
+      if (status) {
+        _padingValue = 40.0;
+      } else {
+        _padingValue = 30.0;
+      }
+      status = !status;
+    });
+  }
+ GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedContainer(
+                  height: _height,
+                  width: _width,
+                  color: _color,
+                  //加入了内边距的变化
+                  padding: EdgeInsets.all(_padingValue),
+                  duration: Duration(milliseconds: 300),
+                  child: Center(
+                  //同时为了更好观察内边距的变化，我在内部加了一个宽度为80，颜色白色的小部件。注意观察它的宽度变化
+                    child: Container(
+                      width: 80,
+                      color: Colors.white,
+                      child: Text(&quot;内部&quot;),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+</code></pre>
+<p>可以观察到由于padding的变化，内部的宽度也发生了变化。<br>
+<img src="http://blogimg.topmini.cn/Fh10eKmKgrVtaek_RO-52hJ9eEK7" alt="图三：内边距的变化"></p>
+<h4 id="margin外边距">margin外边距</h4>
+<pre><code> void _animating() {
+    setState(() {
+      if (status) {
+        _marginValue = 0.0;
+      } else {
+        _marginValue = 30.0;
+      }
+      status = !status;
+    });
+  }
+GestureDetector(
+              onTap: _animating,
+              child: Center(
+              //为了观察margin的变化，我在AnimatedContainer上下各加了widget，观察他们之间的距离
+                child: Column(
+                  children: &lt;Widget&gt;[
+                    Text(&quot;上&quot;),
+                    AnimatedContainer(
+                      height: _height,
+                      width: _width,
+                      color: _color,
+                      margin: EdgeInsets.all(_marginValue),
+                      padding: EdgeInsets.all(_padingValue),
+                      duration: Duration(milliseconds: 300),
+                      child: Center(
+                        child: Container(
+                          width: 80,
+                          color: Colors.white,
+                          child: Text(&quot;内部&quot;),
+                        ),
+                      ),
+                    ),
+                    Text(&quot;下&quot;),
+                  ],
+                ),
+              ),
+            ),
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="http://blogimg.topmini.cn/FnB-chn3nDklNWFdrlcKzxXWMBgx" alt="图四：外边距的变化"></figure>
+<h4 id="子控件对齐">子控件对齐</h4>
+<p>要注意，这个是作用到子控件上的。</p>
+<pre><code>  void _animating() {
+    setState(() {
+      if (status) {
+      //中间对齐
+        _alignment = Alignment.center;
+      } else {
+      //底部右侧
+        _alignment = Alignment.bottomRight;
+      }
+      status = !status;
+    });
+  }
+ GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedContainer(
+                //控制内部的子控件的对齐方式
+                  alignment: _alignment,
+                  height: 300,
+                  width: 300,
+                  color: _color,
+                  duration: Duration(milliseconds: 500),
+                  child: Container(
+                    width: 80,
+                    color: Colors.white,
+                    child: Text(&quot;内部&quot;),
+                  ),
+                ),
+              ),
+            ),
+            
+</code></pre>
+<p>内部的子控件由中间移动到右下角</p>
+<figure data-type="image" tabindex="4"><img src="http://blogimg.topmini.cn/Fllp3pD2QDdZ45TJ6VW-B9nm4Z3S" alt="AnimatedContainer_color_aligment"></figure>
+<h4 id="transform-变换">transform 变换</h4>
+<p>这个主要是用到了矩阵变换，比如移动位置，放大，缩小 等操作。这些操作也有专门的widget，以后会写出来。</p>
+<pre><code>void _animating() {
+    setState(() {
+      if (status) {
+        _matrix4 = Matrix4.translationValues(0, 0, 0);
+      } else {
+        _matrix4 = Matrix4.translationValues(20, 50, 0);
+      }
+      status = !status;
+    });
+  }
+ GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedContainer(
+                  height: 150,
+                  width: 150,
+                  color: _color,
+                  transform: _matrix4,
+                  duration: Duration(milliseconds: 500),
+                  child: Center(
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+</code></pre>
+<p>这里展示了位移的变化</p>
+<figure data-type="image" tabindex="5"><img src="http://blogimg.topmini.cn/FuxBpzrMLKaiznLopX397R5hTvWQ" alt="AnimatedContainer_color_transfrom"></figure>
+<h4 id="decoration-装饰比如背景色color注意不能和外部的color同时设置会报错边框等">decoration 装饰，比如背景色color（注意不能和外部的color同时设置，会报错），边框，等</h4>
+<pre><code>GestureDetector(
+              onTap: _animating,
+              child: Center(
+                child: AnimatedContainer(
+                  height: 150,
+                  width: 150,
+                  //装饰器
+                  decoration: BoxDecoration(
+                      color: _color,
+                      //边框的颜色和边框宽度变化
+                      border: Border.all(
+                          color: status ? Colors.cyanAccent : Colors.black,
+                          width: status ? 20 : 10)),
+                  duration: Duration(milliseconds: 500),
+                  child: Center(
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                ),
+              ),
+            )
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="http://blogimg.topmini.cn/FtFAwFYPspVNngpcTsohEFxQC0IS" alt="AnimatedContainer_decoration"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#flutter%E5%8A%A8%E7%94%BB%E5%90%88%E9%9B%861">Flutter动画合集(1)</a></li>
+<li><a href="#%E5%8A%A8%E7%94%BBwidget">动画widget</a>
+<ul>
+<li><a href="#animatedcontainer">AnimatedContainer</a>
+<ul>
+<li><a href="#%E5%AE%BD%E9%AB%98%E5%8A%A8%E7%94%BB">宽高动画</a></li>
+<li><a href="#%E9%A2%9C%E8%89%B2%E5%8A%A8%E7%94%BB">颜色动画</a></li>
+<li><a href="#padding-%E5%86%85%E8%BE%B9%E8%B7%9D">padding 内边距</a></li>
+<li><a href="#margin%E5%A4%96%E8%BE%B9%E8%B7%9D">margin外边距</a></li>
+<li><a href="#%E5%AD%90%E6%8E%A7%E4%BB%B6%E5%AF%B9%E9%BD%90">子控件对齐</a></li>
+<li><a href="#transform-%E5%8F%98%E6%8D%A2">transform 变换</a></li>
+<li><a href="#decoration-%E8%A3%85%E9%A5%B0%E6%AF%94%E5%A6%82%E8%83%8C%E6%99%AF%E8%89%B2color%E6%B3%A8%E6%84%8F%E4%B8%8D%E8%83%BD%E5%92%8C%E5%A4%96%E9%83%A8%E7%9A%84color%E5%90%8C%E6%97%B6%E8%AE%BE%E7%BD%AE%E4%BC%9A%E6%8A%A5%E9%94%99%E8%BE%B9%E6%A1%86%E7%AD%89">decoration 装饰，比如背景色color（注意不能和外部的color同时设置，会报错），边框，等</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/shi-xian-viewpager-de-bu-tong-hua-dong-xiao-guo">
+              <h3 class="post-title">
+                实现ViewPager的不同滑动效果
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>
