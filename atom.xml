@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mran.github.io</id>
     <title>Gridea</title>
-    <updated>2019-10-14T01:52:45.896Z</updated>
+    <updated>2019-10-14T02:02:36.223Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mran.github.io"/>
     <link rel="self" href="https://mran.github.io/atom.xml"/>
@@ -10,6 +10,19 @@
     <logo>https://mran.github.io/images/avatar.png</logo>
     <icon>https://mran.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[做了一个下拉刷新的控件]]></title>
+        <id>https://mran.github.io/post/zuo-liao-yi-ge-xia-la-shua-xin-de-kong-jian</id>
+        <link href="https://mran.github.io/post/zuo-liao-yi-ge-xia-la-shua-xin-de-kong-jian">
+        </link>
+        <updated>2019-10-14T01:59:16.000Z</updated>
+        <summary type="html"><![CDATA[<p>在<a href="https://uimovement.com/ui/4345/preloader-refresh/">UI Movement</a>上看到一个好看的下拉刷新的控件效果,想着把他实现了.</p>
+<figure data-type="image" tabindex="1"><img src="https://ws1.sinaimg.cn/large/005IAkpWgy1fkf8492nqfg30m80gob2f.jpg" alt=""></figure>
+]]></summary>
+        <content type="html"><![CDATA[<p>在<a href="https://uimovement.com/ui/4345/preloader-refresh/">UI Movement</a>上看到一个好看的下拉刷新的控件效果,想着把他实现了.</p>
+<figure data-type="image" tabindex="1"><img src="https://ws1.sinaimg.cn/large/005IAkpWgy1fkf8492nqfg30m80gob2f.jpg" alt=""></figure>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[ 模仿知乎安卓客户端的banner广告条以及一些思考]]></title>
         <id>https://mran.github.io/post/mo-fang-zhi-hu-an-zhuo-ke-hu-duan-de-banner-guang-gao-tiao-yi-ji-yi-xie-si-kao</id>

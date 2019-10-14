@@ -1,0 +1,400 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>做了一个下拉刷新的控件 | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571018553667">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571018553667" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              做了一个下拉刷新的控件
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>在<a href="https://uimovement.com/ui/4345/preloader-refresh/">UI Movement</a>上看到一个好看的下拉刷新的控件效果,想着把他实现了.</p>
+<figure data-type="image" tabindex="1"><img src="https://ws1.sinaimg.cn/large/005IAkpWgy1fkf8492nqfg30m80gob2f.jpg" alt=""></figure>
+<!--more-->
+<h2 id="效果预览">效果预览</h2>
+<p>原地址在<a href="https://uimovement.com/ui/4345/preloader-refresh/">UI Movement</a><br>
+效果是这样的</p>
+<figure data-type="image" tabindex="2"><img src="https://ws1.sinaimg.cn/large/005IAkpWgy1fkf8492nqfg30m80gob2f.jpg" alt=""></figure>
+<p>下面是我做出来的效果</p>
+<figure data-type="image" tabindex="3"><img src="https://ws1.sinaimg.cn/large/005IAkpWgy1fkf8vkgg7fg30k00zkqv5.jpg" alt=""></figure>
+<h2 id="效果分析">效果分析</h2>
+<p>老样子,首先进行效果分析</p>
+<ol>
+<li>这是一个下拉刷新控件</li>
+<li>下拉的过程中从顶部出现很多圆形小点,小点的半径和亮度(透明度)会发生变化,这个变化是和下拉程度无关的.</li>
+<li>随着下拉的进行,小圆点汇聚成一个圆环</li>
+<li>下拉结束时,汇聚成的圆环的半径会形成类似于呼吸灯的大小变化.</li>
+<li>下拉效果是有阻力的,也就是手指移动的距离和控件移动的距离是不一样的.</li>
+<li>在没有下拉形成一个完整圆环的时候松手,小点会散回去</li>
+</ol>
+<p>我分了两步来实现这个控件</p>
+<ol>
+<li>下拉的动画,他负责实现具体的动画效果</li>
+<li>下拉控件布局,负责处理触摸事件,对外暴露接口<br>
+也就是说这个这个下拉刷新控件是由一个动画和自定义的viewGroup组合而成的.</li>
+</ol>
+<h2 id="下拉动画的实现">下拉动画的实现</h2>
+<p>我把它叫做<code>HaloRingAnimation</code>,这是一个自定义view.<br>
+根据效果分析,需要定义一个点,起始坐标,结束坐标,移动路径,半径,透明度.我专门定义了一个类<code>HaloPoint</code></p>
+<pre><code class="language-java">private class HaloPoint {
+        float pos[] = {0, 0};//坐标,x,y;
+        float radius = 8;//点的半径
+        Path mPath;//移动路径
+        float length;//路径长度
+        float endPos[] = {0, 0};//终点位置坐标
+        float startPercent = 0f;//可以显示时的比例,确定何时出现
+        boolean drawAble = false;//确定是否可现实
+        int alpha;//透明度
+
+        void setPos(float x, float y) {
+            this.pos[0] = x;
+            this.pos[1] = y;
+        }
+
+        void setRadius(float radius) {
+            this.radius = radius;
+        }
+    }
+</code></pre>
+<p>在进行初始化的时候，每个点都需要进行初始化，一个圆环360度，可以360个点组成。<br>
+每个点的初始位置都在控件的最上层，也就是每个点的初始y坐标为-5(为了出现的效果不那么突兀)，而x坐标，我决定使用随机值,每个点的大小,透明度,移动我也使用了随机值.</p>
+<pre><code class="language-java">        for (int i = 0; i &lt; 360; i++) {
+                HaloPoint haloPoint = mHaloPoints.get(i);
+                haloPoint.setRadius((float) (1 + Math.random() * 3));//初始化点的大小
+                setStartPos((float) (Math.random() * width), -5, haloPoint.pos);//初始化点的位置
+                setEndPos(width / 2, mRingTop + mRingRadius, -90 + i, haloPoint.endPos);//初始化点移动的结束位置
+                haloPoint.mPath = setPath(haloPoint.pos, haloPoint.endPos);//初始化点移动的路径path
+                pathMeasure.setPath(haloPoint.mPath, false);//将path进行测量
+                haloPoint.length = pathMeasure.getLength();//获取path的总长度
+                haloPoint.startPercent = i &gt; 180 ? (1 - (i / 360.0f)) : mHalfPercent / 180 * i;//设置point应该何时出现
+                haloPoint.alpha = 100 + (int) (50 * Math.random());//点的变化透明度
+            }
+</code></pre>
+<p>这里面有两个地方需要说一下<br>
+一是点的最终坐标的确定，这些点的坐标要保证能够形成一个圆</p>
+<pre><code class="language-java">    //确定点移动结束后在圆上的坐标,
+    private void setEndPos(int xDot, int yDot, int radius, float pos[]) {
+        pos[0] = (float) (xDot + mRingRadius * (Math.cos(radius * Math.PI / 180)));
+        pos[1] = (float) (yDot + mRingRadius * (Math.sin(radius * Math.PI / 180)));
+    }
+
+</code></pre>
+<p>二是点的移动路径,点的移动路径使用了path,曲线使用的两段二阶的贝塞尔曲线构成的.而且贝塞尔曲线的取点,也选的是随机的,只有终点位置是确定的,不过也可以通过设置不同的曲线来实现不同的效果.</p>
+<pre><code class="language-java">    //设置点的移动路径
+    private Path setPath(float startPos[], float endPos[]) {
+        Path path = new Path();
+        path.moveTo(startPos[0], startPos[1]);
+        path.quadTo((float) (Math.random() * width), (float) (Math.random() * mRingTop), (float) width / 4 + (float) (Math.random() * width / 2), (float) (Math.random() * mRingTop));
+        path.quadTo((float) (Math.random() * width), (float) (Math.random() * mRingTop), endPos[0], endPos[1]);
+        return path;
+    }
+</code></pre>
+<p>为了实现点的大小变化和下拉无关,使用了一个<code>ValueAnimator</code>,用来产生有规律的数字,进行主动刷新重绘</p>
+<pre><code class="language-java">  mPointAlphaRadiusValueAnimator = new ValueAnimator();
+        mPointAlphaRadiusValueAnimator.setDuration(800);
+        mPointAlphaRadiusValueAnimator.setFloatValues(100);
+        mPointAlphaRadiusValueAnimator.setRepeatCount(ValueAnimator.INFINITE);//动画无限进行,
+        mPointAlphaRadiusValueAnimator.setRepeatMode(ValueAnimator.REVERSE);//动画的循环方式
+        mPointAlphaRadiusValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                timeRationAlpha = (float) animation.getAnimatedValue();//透明度变化
+                timeRationRadius = (float) animation.getAnimatedValue() * 0.05f;//圆点半径的变化
+                mRingRadius = (int) ((float) animation.getAnimatedValue() * 0.1f + mRingRadiusONLY - 5);//圆环半径的变化
+                invalidate();//重绘
+            }
+        });
+</code></pre>
+<p>可以看到我是在这里进行重绘的.<br>
+看一下重要的绘制部分</p>
+<pre><code class="language-java"> @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (!mPullEnd) {//在没有下拉到底部的时候才进行绘制
+            for (int i = 0; i &lt; 360; i += 5) {//调整i的间隔数可以实现不同的效果
+                HaloPoint haloPoint = mHaloPoints.get(i);
+                haloPoint.drawAble = haloPoint.startPercent &lt; mPercent;
+                //将需要显示的点显示出来
+                if (!haloPoint.drawAble)
+                    continue;
+                //确定点的位置
+                pathMeasure.setPath(haloPoint.mPath, false);
+                pathMeasure.getPosTan(haloPoint.length * (mPercent - haloPoint.startPercent) / mHalfPercent, haloPoint.pos, null);
+                int alpha = Math.min((int) (haloPoint.alpha + i + timeRationAlpha), 255);
+                mPointPaint.setAlpha(alpha);
+
+                float pointRadius;
+                //产生不同点在不同时刻大小不断变化的效果
+                if (i % 2 == 0)
+                    pointRadius = (float) (timeRationRadius * ((Math.cos((mPercent - haloPoint.startPercent) / mHalfPercent * 100))) + 6);
+                else
+                    pointRadius = (float) (timeRationRadius * (Math.abs(Math.sin((mPercent - haloPoint.startPercent) / mHalfPercent * 100))) + 4);
+                //当点移动到位时,透明度,大小还有阴影都不再发生变化
+                if ((mPercent - haloPoint.startPercent) / mHalfPercent &gt;= 1) {
+                    pointRadius = 7;
+                    mPointPaint.setAlpha(255);
+                    mPointPaint.clearShadowLayer();
+                }
+                canvas.drawCircle(haloPoint.pos[0], haloPoint.pos[1], pointRadius, mPointPaint);
+            }
+        } else {
+            //当下拉底部时,画出圆环
+            canvas.drawCircle(width / 2, mRingTop + mRingRadiusONLY, mRingRadius, mRingPaint);
+        }
+    }
+</code></pre>
+<p>这里面重要的一步是如何确定点的位置,也就是确定确定path上某一点的位置,有<code>pathMeasure.getPosTan()</code>这个方法可以用,需要传入三个参数,该点在path上距起点的距离,保存点坐标的一个数组,保存正切值的一个数组.这个距离也可以通过<code>pathMeasure.getLength()</code>来获得.</p>
+<h2 id="下拉控件的实现">下拉控件的实现</h2>
+<p>通过继承FrameLayout,对其进行改写,这一部分参考了官方的SwipeRefreshLayout的实现,还有<a href="https://github.com/tuesda/CircleRefreshLayout">CircleRefreshLayout</a>的实现.学习到了很多<br>
+FrameLayout的布局是最简单的一种布局,就是所有的控件都放在左上角,进行层叠摆放,这也正是我需要的,也就没有对其重写.<br>
+真正重写地方有3处<br>
+1.<code>addview</code>,为了保证控件中只有一个子view</p>
+<pre><code> @Override
+    public void addView(View child) {
+        //确保只能添加一个view
+        if (getChildCount() &gt;= 1) {
+            throw new RuntimeException(&quot;you can only attach one child&quot;);
+        }
+        mChildView = child;
+        super.addView(child);
+    }
+</code></pre>
+<p>2.<code>onInterceptTouchEvent</code>,为了保证触摸事件正确地分发</p>
+<pre><code class="language-java">  public boolean onInterceptTouchEvent(MotionEvent event) {
+
+         if (mIsRefreshing||!mEnableRefresh) {
+            return super.onInterceptTouchEvent(event);
+        }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mIsRefreshing = false;
+                mInitialDownY = event.getY();
+                mIsBeingDragged = false;
+                mHeaderView.setEndpull(false);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float y = event.getY();
+                startDragging(y);//判断是否产生有效滑动
+                if (mIsBeingDragged)
+                    return true;
+        }
+        return super.onInterceptTouchEvent(event);
+    }
+</code></pre>
+<p>3.<code>onTouchEvent</code>,根据触摸效果进行处理.</p>
+<pre><code class="language-java"> @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        if (mIsRefreshing) {
+            return super.onTouchEvent(event);
+        }
+        int action = event.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_MOVE:
+                float y = event.getY();
+                startDragging(y);
+
+                if (mIsBeingDragged) {
+                    //加入滑动阻力,计算出控件应该移动的距离
+                    overScrollTop = (y - mInitialMotionY) * dragRatio;
+                    if (overScrollTop &gt; 0) {
+                        fingerMove(overScrollTop);
+                        mHeaderView.setPercent(mPercent);
+                        if (overScrollTop &lt; mMaxDragDistance) {
+                            if (!mHeaderView.isAnimationRunning())
+                                mHeaderView.startAnimation();
+                                //子view进行移动
+                            mChildView.setTranslationY(overScrollTop);
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                mIsBeingDragged = false;
+                //根据不同的滑动程度来确定不同的手指离开后的效果
+                if (mPercent == 1) {
+                    mPullEnd = true;
+                    mIsRefreshing = true;
+                    mHeaderView.setEndpull(true);
+                    mHeaderView.setAnimationCurrentPlayTime(400);
+                } else {//当没有拉到底部时,将控件返回
+                    mPullEnd = false;
+                    mIsRefreshing = false;
+                    mHeaderView.setEndpull(false);
+                    mBackUpValueAnimator.setCurrentPlayTime((long) ((1 - mPercent) * BACK_UP_DURATION));
+                    mBackUpValueAnimator.start();
+
+                }
+                break;
+        }
+        return true;
+    }
+</code></pre>
+<p>实现起来其实没有那么难, 不过也能从中学习到不少的东西.<br>
+源代码地址在我的<a href="https://github.com/Mran/HaloRingPullRefresh">https://github.com/Mran/HaloRingPullRefresh</a>,欢迎start和issue.<br>
+水平不足,说错的地方请多多指教.</p>
+<img src="https://badge.juejin.im/entry/59e05fccf265da43333d6a6c/likes.svg?style=flat-square">
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%95%88%E6%9E%9C%E9%A2%84%E8%A7%88">效果预览</a></li>
+<li><a href="#%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90">效果分析</a></li>
+<li><a href="#%E4%B8%8B%E6%8B%89%E5%8A%A8%E7%94%BB%E7%9A%84%E5%AE%9E%E7%8E%B0">下拉动画的实现</a></li>
+<li><a href="#%E4%B8%8B%E6%8B%89%E6%8E%A7%E4%BB%B6%E7%9A%84%E5%AE%9E%E7%8E%B0">下拉控件的实现</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/mo-fang-zhi-hu-an-zhuo-ke-hu-duan-de-banner-guang-gao-tiao-yi-ji-yi-xie-si-kao">
+              <h3 class="post-title">
+                 模仿知乎安卓客户端的banner广告条以及一些思考
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>
