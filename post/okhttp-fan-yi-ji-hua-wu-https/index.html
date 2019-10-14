@@ -1,0 +1,256 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title> okhttp翻译计划 （五）--HTTPS | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+               okhttp翻译计划 （五）--HTTPS
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="第五部分https">第五部分:HTTPS</h2>
+<!--more-->
+<h2 id="https"><a href="https://github.com/square/okhttp/wiki/HTTPS">HTTPS</a></h2>
+<p>OkHttp会尝试平衡以下两个问题:</p>
+<ul>
+<li>尽可能多的连接主机的能力.这包括运行在新版本的<a href="https://boringssl.googlesource.com/boringssl/">boringssl</a>的主机和运行旧版本的<a href="https://www.openssl.org/">Openssl</a>的过时的主机.</li>
+<li>连接的私密性.这包括使用证书来与远程服务器进行验证和使用强密码来保证数据交换的私密性.</li>
+</ul>
+<p>当与一个HTTPS服务器协定一个连接时,OkHttp需要知道使用哪个版本的<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/TlsVersion.html">TLS(TLS version)</a>和加密套件.一个客户端想要最大限度地提高连接能力就需要包括过时的TLS版本和弱设计的加密套件.一个加密的客户端想要最大限度地提高私密性就要被限制只使用最新版本的TLS和强加密套件.</p>
+<p>在实现时,选择私密性还是连接能力取决于<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/ConnectionSpec.html">ConnectionSpec</a>.OkHttp包括了三个嵌入式的连接方案:</p>
+<ul>
+<li><code>MODERN_TLS</code>是一个连接现代HTTPS服务器的安全配置.</li>
+<li><code>COMPATIBLE_TLS</code>是一个能够可靠连接非现代HTTPS服务器的安全配置</li>
+<li><code>CLEARTEXT</code>用来连接<code>http://</code>URLs的不安全的配置.</li>
+</ul>
+<p>默认情况下,OkHttp会先尝试进行<code>MODERN_TLS</code>连接,如果失败就会进行<code>COMPATIBLE_TLS</code>连接.</p>
+<p>在OkHttp的每个发行版中,每个方案的TLS版本和加密套件都会发生改变.比如,在OkHttp2.2中我们停止了对SSL3.0的支持以应对<a href="http://googleonlinesecurity.blogspot.ca/2014/10/this-poodle-bites-exploiting-ssl-30.html">POODLE</a>攻击.在OkHttp2.3中,我们停止了对<a href="http://en.wikipedia.org/wiki/RC4#Security">RC4</a>的支持.就像你的桌面网络浏览器一样,保持安全的最好办法就是保持对OkHttp的更新.</p>
+<p>你可以使用一个定制的TLS版本和加密套件来构建你自己的连接方案.比如,下面的这个配置就是被限制使用了三重高级的加密套件.它的缺点就是需要工作在安卓5.0以上的系统和一个同样的现代服务器.</p>
+<pre><code class="language-java">ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)  
+    .tlsVersions(TlsVersion.TLS_1_2)
+    .cipherSuites(
+          CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+          CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+          CipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
+    .build();
+
+OkHttpClient client = new OkHttpClient.Builder() 
+    .connectionSpecs(Collections.singletonList(spec))
+    .build();
+</code></pre>
+<h3 id="certificate-pinning"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/CertificatePinning.java">Certificate Pinning</a> 证书固定</h3>
+<p>默认情况下,OkHttp会信任主机平台的证书认证.这会最大化的提升连接能力,但是这是成为证书认证攻击的目标,比如<a href="http://www.computerworld.com/article/2510951/cybercrime-hacking/hackers-spied-on-300-000-iranians-using-fake-google-certificate.html">2011 DigNotar attack</a>.OkHttp同时也假设你的HTTPS服务器的证书是被发证中心签名过的.</p>
+<p>你可以使用<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html">CertificatePinner</a>来限制哪个证书和发证中心会被信任.证书固定会增加保密性,但是会限制你的服务器团队更新TLS证书的能力.<strong>不要在没经过你们服务器的TLS管理员的允许的情况下使用证书固定!</strong></p>
+<pre><code class="language-java">public CertificatePinning() {
+    client = new OkHttpClient.Builder()
+        .certificatePinner(new CertificatePinner.Builder()
+            .add(&quot;publicobject.com&quot;, &quot;sha256/afwiKY3RxoMmLkuRW1l7QsPZTJPwDS2pdDROQjXw8ig=&quot;)
+            .build())
+        .build();
+  }
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;https://publicobject.com/robots.txt&quot;)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    for (Certificate certificate : response.handshake().peerCertificates()) {
+      System.out.println(CertificatePinner.pin(certificate));
+    }
+  }
+</code></pre>
+<h3 id="customizing-trusted-certificates"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/CustomTrust.java">customizing Trusted Certificates</a> 定制可信任的证书</h3>
+<p>以下的全部代码为你展示了如何使用你自己的设置来替换掉主机平台的证书认证中心.同样的<strong>不要在没经过你们服务器的TLS管理员的允许的情况下使用自定义的证书!</strong></p>
+<pre><code class="language-java">private final OkHttpClient client;
+
+  public CustomTrust() {
+    SSLContext sslContext = sslContextForTrustedCertificates(trustedCertificatesInputStream());
+    client = new OkHttpClient.Builder()
+        .sslSocketFactory(sslContext.getSocketFactory())
+        .build();
+  }
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;https://publicobject.com/helloworld.txt&quot;)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    System.out.println(response.body().string());
+  }
+
+  private InputStream trustedCertificatesInputStream() {
+    ... // Full source omitted. See sample.
+  }
+
+  public SSLContext sslContextForTrustedCertificates(InputStream in) {
+    ... // Full source omitted. See sample.
+  }
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%AC%AC%E4%BA%94%E9%83%A8%E5%88%86https">第五部分:HTTPS</a></li>
+<li><a href="#https">HTTPS</a>
+<ul>
+<li><a href="#certificate-pinning">Certificate Pinning</a></li>
+<li><a href="#customizing-trusted-certificates">customizing Trusted Certificates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/retrofit-1-basic-authentication-on-android">
+              <h3 class="post-title">
+                Retrofit （1）  — Basic Authentication on Android
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

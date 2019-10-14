@@ -1,0 +1,289 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retrofit （2） — Token Authentication on Android | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Retrofit （2） — Token Authentication on Android
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>这篇的内容主要是对之前的[Basic认证]的补充,我们将讲一下在安卓app到服务器之间如何进行token认证.</p>
+<!--more-->
+<h3 id="integrate-token-authentication-加入token认证">Integrate Token Authentication 加入Token认证</h3>
+<p>如果你阅读过上一篇关于用Retrofit来进行认证的文章,那或许你就知道我们要做什么了:没错,就是拓展<code>ServiceGenerate</code>类,给它增加一个可以处理token认证的方法.我们又给<code>ServiceGenerate</code>类增添了一个<code>creatService</code>方法.</p>
+<h4 id="retrofit19">Retrofit1.9</h4>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;https://your.api-base.url&quot;;
+
+    private static RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint(API_BASE_URL)
+                .setClient(new OkClient(new OkHttpClient()));
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        return createService(serviceClass, null);
+    }
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass, final String authToken) {  
+      if (authToken != null) {
+          builder.setRequestInterceptor(new RequestInterceptor() {
+              @Override
+              public void intercept(RequestFacade request) {
+                  request.addHeader(&quot;Authorization&quot;, authToken);
+              }
+          });
+      }
+
+      RestAdapter adapter = builder.build();
+      return adapter.create(serviceClass);
+    }
+}
+</code></pre>
+<h4 id="retrofit2">Retrofit2</h4>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;https://your.api-base.url&quot;;
+
+    private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+    private static Retrofit.Builder builder =
+            new Retrofit.Builder()
+                    .baseUrl(API_BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create());
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        return createService(serviceClass, null);
+    }
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass, final String authToken) {
+        if (authToken != null) {
+            httpClient.addInterceptor(new Interceptor() {
+                @Override
+                public Response intercept(Interceptor.Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    /* Request customization: add request headers*/
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .header(&quot;Authorization&quot;, authToken)
+                            .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            });
+        }
+
+        OkHttpClient client = httpClient.build();
+        Retrofit retrofit = builder.client(client).build();
+        return retrofit.create(serviceClass);
+    }
+}
+</code></pre>
+<p>仔细看上面的代码,我们把认证需要的token作为字符串变量传入这个方法,然后使用拦截器<code>RequestInterceptor</code>(Retrofit2中的是<code>Interceptor</code>)来向HTTP的头部字段来设置一个<strong>Authorization</strong>.<br>
+假如你的Token认证使用的是其他的HTTP头部字段,那就调整一下上面的代码,或者是新建一个方法来满足你的需求.</p>
+<p>😃</p>
+<p>现在,用这个加入了token值的方法创建的HTTP连接都会自动的发送token的值到API接受端.</p>
+<h3 id="example-usage-用例">Example Usage 用例</h3>
+<p>我们来把上面的代码用到实践当中看一下.下面的<code>UserSevice</code> 接口声明了一个<code>me()</code>方法,这个方法会返回一个根据API响应创建的user对象.</p>
+<h4 id="retrofit19-2">Retrofit1.9</h4>
+<pre><code class="language-java">public interface UserService {  
+    @POST(&quot;/me&quot;)
+    User me();
+}
+</code></pre>
+<h4 id="retrofit2-2">Retrofit2</h4>
+<pre><code class="language-java">public interface UserService {  
+    @POST(&quot;/me&quot;)
+    Call&lt;User&gt; me();
+}
+</code></pre>
+<p>我们要访问的API<code>http://your.api-base.url/me</code>需要一个认证,然后在响应中会返回用户数据.我们来创建一个<code>UserSevice</code> 对象,在实践请求中试一下.</p>
+<h4 id="retrofit19-3">Retrofit1.9</h4>
+<pre><code class="language-java">UserService userService =  ServiceGenerator.create(UserService.class, &quot;auth-token&quot;);
+User user = userService.me();
+</code></pre>
+<h4 id="retrofit2-3">Retrofit2</h4>
+<pre><code class="language-java">UserService userService =  ServiceGenerator.create(UserService.class, &quot;auth-token&quot;);
+Call&lt;User&gt; call = userService.me();  
+User user = call.execute().body(); 
+</code></pre>
+<p>这个代码只是演示了一下怎么使用,在实际应用中你要向<code>ServiceGenerate</code>方法提供一个真实的认证token.<br>
+完<br>
+翻译不当之处,请尽情指出,感激不尽.<br>
+原文:https://futurestud.io/tutorials/retrofit-token-authentication-on-android</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#integrate-token-authentication-%E5%8A%A0%E5%85%A5token%E8%AE%A4%E8%AF%81">Integrate Token Authentication 加入Token认证</a>
+<ul>
+<li><a href="#retrofit19">Retrofit1.9</a></li>
+<li><a href="#retrofit2">Retrofit2</a></li>
+</ul>
+</li>
+<li><a href="#example-usage-%E7%94%A8%E4%BE%8B">Example Usage 用例</a>
+<ul>
+<li><a href="#retrofit19-2">Retrofit1.9</a></li>
+<li><a href="#retrofit2-2">Retrofit2</a></li>
+<li><a href="#retrofit19-3">Retrofit1.9</a></li>
+<li><a href="#retrofit2-3">Retrofit2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/okhttp-fan-yi-ji-hua-wu-https">
+              <h3 class="post-title">
+                 okhttp翻译计划 （五）--HTTPS
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,610 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>使用Glide来自定义加载数据过程 | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              使用Glide来自定义加载数据过程
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                15 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>本文记录了我使用Glide中的自定义类型数据加载来解决,复杂情况下的图像显示问题.</p>
+<!--more-->
+<h3 id="背景">背景</h3>
+<p>我们的app有一个功能是图书馆搜索,就是模拟网页搜索,从我校的图书馆网页来获取搜索结果.在图书馆的搜索结果页面需要显示图书的封面和图书的基本信息.图书的基本信息,比如作者,出版社,ISBN等信息都能从图书馆的网页上获取,但是图书馆的网页却不提供图书封面,于是我就想到可以使用豆瓣图书的搜索ISBN功能来获得书的封面的url,因为ISBN是唯一的,所以可以确定图书的封面也是唯一的.</p>
+<p>但是如果把搜索图书和从豆瓣获取图书封面图片的url这两步都放在一起,就会造成显示速度很慢.我就想,可以先显示搜索结果,获取图片的url的工作在显示搜索结果之后进行.</p>
+<h3 id="尝试一">尝试一</h3>
+<p>我第一次想到方案是在显示数据的时候去获取图片的url.来看代码</p>
+<pre><code class="language-java"> @Override
+public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
+/*把ISBN作为数据输入*/
+ Observable.just(&quot;ISBN&quot;).flatMap(new Func1&lt;String, Observable&lt;String&gt;&gt;() {
+
+                @Override
+                public Observable&lt;String&gt; call(String s) {
+                    /* 从获取图片url*/
+                    return DoubanApi.getDoubanSearch().doubanSearch(s);
+                }
+            }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+              .subscribe(new Subscriber&lt;String&gt;() {
+                @Override
+                public void onCompleted() {
+                    
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onNext(String o) {
+                /*获取了URL之后进行加载*/
+                Glide.with(context).load(doubanBookCoverImage).into((SearchViewHodler) holder).bookImage);
+                }
+            });
+    }
+</code></pre>
+<p>这个方法看起来很好用,使用Rxjava,先在io线程获得url,再在ui线程调用Glide来加载图片.实际用起来就看出问题了----图片会发生错乱.我们使用Glide就是为了解决从网络加载图片时的错乱问题,他能够解决是因为,它能控制图片出现在屏幕上的时候去请求网络加载,当图片离开屏幕时取消加载,而我们却在他外面包裹了一个Rxjava,打乱了它的控制,所以会出现错乱.</p>
+<p>尝试一失败</p>
+<h3 id="尝试二">尝试二</h3>
+<p>通过搜索,我发现了这一片文章<a href="http://www.licheedev.com/2015/09/19/custom-glide-modelloader/">加载网络图片但没URL？不要紧，通过ModelLoader，让Glide直接加载任何奇葩数据源</a>看完之后发现,这正是我要找的.</p>
+<h4 id="主要原理">主要原理</h4>
+<p>查看官方的wiki<br>
+https://github.com/bumptech/glide/wiki/Downloading-custom-sizes-with-Glide<br>
+官方的的这个例子是用来自定义请求的图片大小的,不过我们可以看一下它是怎么做的,它继承了<a href="https://github.com/bumptech/glide/blob/master/library/src/main/java/com/bumptech/glide/load/model/stream/BaseGlideUrlLoader.java">BaseGlideUrlLoader</a>,我们看一下这个<code>BaseGlideUrlLoader</code>都做了什么</p>
+<pre><code class="language-java">/**
+ * A base class for loading images over http/https. Can be subclassed for use with any model that can be translated
+ * in to {@link java.io.InputStream} data.
+ *
+ * @param &lt;T&gt; The type of the model.
+ */
+public abstract class BaseGlideUrlLoader&lt;T&gt; implements StreamModelLoader&lt;T&gt; {
+    private final ModelLoader&lt;GlideUrl, InputStream&gt; concreteLoader;
+    private final ModelCache&lt;T, GlideUrl&gt; modelCache;
+
+    public BaseGlideUrlLoader(Context context) {
+        this(context, null);
+    }
+
+    public BaseGlideUrlLoader(Context context, ModelCache&lt;T, GlideUrl&gt; modelCache) {
+        this(Glide.buildModelLoader(GlideUrl.class, InputStream.class, context), modelCache);
+    }
+
+    public BaseGlideUrlLoader(ModelLoader&lt;GlideUrl, InputStream&gt; concreteLoader) {
+        this(concreteLoader, null);
+    }
+
+    public BaseGlideUrlLoader(ModelLoader&lt;GlideUrl, InputStream&gt; concreteLoader, ModelCache&lt;T, GlideUrl&gt; modelCache) {
+        this.concreteLoader = concreteLoader;
+        this.modelCache = modelCache;
+    }
+
+    @Override
+    public DataFetcher&lt;InputStream&gt; getResourceFetcher(T model, int width, int height) {
+        GlideUrl result = null;
+        if (modelCache != null) {
+            result = modelCache.get(model, width, height);
+        }
+
+        if (result == null) {
+            String stringURL = getUrl(model, width, height);
+            if (TextUtils.isEmpty(stringURL)) {
+               return null;
+            }
+
+            result = new GlideUrl(stringURL, getHeaders(model, width, height));
+
+            if (modelCache != null) {
+                modelCache.put(model, width, height, result);
+            }
+        }
+
+        return concreteLoader.getResourceFetcher(result, width, height);
+    }
+
+    /**
+     * Get a valid url http:// or https:// for the given model and dimensions as a string.
+     *
+     * @param model The model.
+     * @param width The width in pixels of the view/target the image will be loaded into.
+     * @param height The height in pixels of the view/target the image will be loaded into.
+     * @return The String url.
+     */
+    protected abstract String getUrl(T model, int width, int height);
+
+    /**
+     * Get the headers for the given model and dimensions as a map of strings to sets of strings.
+     *
+     * @param model The model.
+     * @param width The width in pixels of the view/target the image will be loaded into.
+     * @param height The height in pixels of the view/target the image will be loaded into.
+     * @return The Headers object containing the headers, or null if no headers should be added.
+     */
+    protected Headers getHeaders(T model, int width, int height) {
+        return Headers.DEFAULT;
+    }
+}
+</code></pre>
+<p>可以看到这个类实现了<code>StreamModelLoader</code>接口,转到这个接口,发现这个接口是继承了<code>ModelLoader</code>,转到``ModelLoader<code>,看到他有一个需要重写的方法</code>getResourceFetcher<code>.好了我们回到</code>BaseGlideUrlLoader`中,看它是怎么重写这个方法的.再来看一下代码</p>
+<pre><code class="language-java"> /**
+     * Obtains an {@link DataFetcher} that can fetch the data required to decode the resource represented by this model.
+     * The {@link DataFetcher} will not be used if the resource is already cached.
+     *
+     * &lt;p&gt;
+     *     Note - If no valid data fetcher can be returned (for example if a model has a null URL), then it is
+     *     acceptable to return a null data fetcher from this method. Doing so will be treated any other failure or
+     *     exception during the load process.
+     * &lt;/p&gt;
+     * @param model The model representing the resource.
+     * @param width The width in pixels of the view or target the resource will be loaded into, or
+     *              {@link com.bumptech.glide.request.target.Target#SIZE_ORIGINAL} to indicate that the resource should
+     *              be loaded at its original width.
+     * @param height The height in pixels of the view or target the resource will be loaded into, or
+     *               {@link com.bumptech.glide.request.target.Target#SIZE_ORIGINAL} to indicate that the resource should
+     *               be loaded at its original height.
+     * @return A {@link DataFetcher} that can obtain the data the resource can be decoded from if the resource is not
+     * cached, or null if no valid {@link com.bumptech.glide.load.data.DataFetcher} could be constructed.
+     */
+@Override
+    public DataFetcher&lt;InputStream&gt; getResourceFetcher(T model, int width, int height) {
+        /*新建一个GlideUrl对象*/
+        GlideUrl result = null;
+        /*判断是否存在缓存*/
+        if (modelCache != null) {
+            /*从缓存中拿到对象*/
+            result = modelCache.get(model, width, height);
+        }
+        /*如果缓存中没有这个对象*/
+        if (result == null) {
+            /*拿到Url*/
+            String stringURL = getUrl(model, width, height);
+            if (TextUtils.isEmpty(stringURL)) {
+               return null;
+            }
+            /*新建一个GlideUrl对象*/
+            result = new GlideUrl(stringURL, getHeaders(model, width, height));
+
+            if (modelCache != null) {
+                /*加入缓存*/
+                modelCache.put(model, width, height, result);
+            }
+        }
+        /*最后返回一个`DataFetcher&lt;InputStream&gt;`对象*/
+        return concreteLoader.getResourceFetcher(result, width, height);
+    }
+</code></pre>
+<p>我们可以看到,这就是一个从缓存或是其他位置(网络,储存)获得数据的方法.他会经过一系列的判断,最后才会返回一个<code>DataFetcher&lt;InputStream&gt;</code>对象,我们再来看一下这个<code>DataFetcher</code>是干什么的.</p>
+<pre><code class="language-java">**
+ * An interface for lazily retrieving data that can be used to load a resource. A new instance is created per
+ * resource load by {@link com.bumptech.glide.load.model.ModelLoader}. {@link #loadData(Priority)} may or may not be
+ * called for any given load depending on whether or not the corresponding resource is cached. Cancel also may or may
+ * not be called. If {@link #loadData(Priority)} is called, then so {@link #cleanup()} will be called.
+ *
+ * @param &lt;T&gt; The type of data to be loaded (InputStream, byte[], File etc).
+ */
+public interface DataFetcher&lt;T&gt; {
+
+    /**
+     * Asynchronously fetch data from which a resource can be decoded. This will always be called on
+     * background thread so it is safe to perform long running tasks here. Any third party libraries called
+     * must be thread safe since this method will be called from a thread in a
+     * {@link java.util.concurrent.ExecutorService} that may have more than one background thread.
+     *
+     * This method will only be called when the corresponding resource is not in the cache.
+     *
+     * &lt;p&gt;
+     *     Note - this method will be run on a background thread so blocking I/O is safe.
+     * &lt;/p&gt;
+     *
+     * @param priority The priority with which the request should be completed.
+     * @see #cleanup() where the data retuned will be cleaned up
+     */
+    T loadData(Priority priority) throws Exception;
+
+    /**
+     * Cleanup or recycle any resources used by this data fetcher. This method will be called in a finally block
+     * after the data returned by {@link #loadData(Priority)} has been decoded by the
+     * {@link com.bumptech.glide.load.ResourceDecoder}.
+     *
+     * &lt;p&gt;
+     *     Note - this method will be run on a background thread so blocking I/O is safe.
+     * &lt;/p&gt;
+     *
+     */
+    void cleanup();
+
+    /**
+     * Returns a string uniquely identifying the data that this fetcher will fetch including the specific size.
+     *
+     * &lt;p&gt;
+     *     A hash of the bytes of the data that will be fetched is the ideal id but since that is in many cases
+     *     impractical, urls, file paths, and uris are normally sufficient.
+     * &lt;/p&gt;
+     *
+     * &lt;p&gt;
+     *     Note - this method will be run on the main thread so it should not perform blocking operations and should
+     *     finish quickly.
+     * &lt;/p&gt;
+     */
+    String getId();
+
+    /**
+     * A method that will be called when a load is no longer relevant and has been cancelled. This method does not need
+     * to guarantee that any in process loads do not finish. It also may be called before a load starts or after it
+     * finishes.
+     *
+     * &lt;p&gt;
+     *  The best way to use this method is to cancel any loads that have not yet started, but allow those that are in
+     *  process to finish since its we typically will want to display the same resource in a different view in
+     *  the near future.
+     * &lt;/p&gt;
+     *
+     * &lt;p&gt;
+     *     Note - this method will be run on the main thread so it should not perform blocking operations and should
+     *     finish quickly.
+     * &lt;/p&gt;
+     */
+    void cancel();
+}
+</code></pre>
+<p>它有4个需要重写的方法<code>loadData(Priority priority)</code>,<code>void cleanup()</code>,<code>String getId()</code>,<code>void cancel()</code>,通过看注释我们可以知道这几个方法是控制图片的获取流程的.这不就是我们需要的嘛,我们可以把获取图片url的过程放在这里.很好,我们只需要通过实现<code>ModelLoader</code>接口来写一个自定义的Loader,再写一个自定义的<code>DataFetcher</code>来控制图片下载过程,就能达到自己的目的了.</p>
+<h4 id="customglideimageloader">CustomGlideImageLoader</h4>
+<p>我模仿着写了一下代码</p>
+<pre><code class="language-java">public class CustomGlideImageLoader implements ModelLoader&lt;DoubanBookCoverImage, InputStream&gt; {
+
+    private final ModelCache&lt;DoubanBookCoverImage, DoubanBookCoverImage&gt; modelCache;
+
+    public CustomGlideImageLoader(ModelCache&lt;DoubanBookCoverImage, DoubanBookCoverImage&gt; modelCache) {
+        this.modelCache = modelCache;
+    }
+
+    public CustomGlideImageLoader() {
+        this(null);
+    }
+
+    @Override
+    public DataFetcher&lt;InputStream&gt; getResourceFetcher(DoubanBookCoverImage model, int width, int height) {
+        DoubanBookCoverImage doubanBookCoverImage = (DoubanBookCoverImage) model;
+        if (modelCache != null) {
+            doubanBookCoverImage = modelCache.get((DoubanBookCoverImage) model, 0, 0);
+            if (doubanBookCoverImage == null) {
+                modelCache.put(model, 0, 0, model);
+                doubanBookCoverImage = model;
+            }
+        }
+        return new CustomGlideFetcher(doubanBookCoverImage);
+    }
+
+    public static class Factory implements ModelLoaderFactory&lt;DoubanBookCoverImage, InputStream&gt; {
+        //设置缓存
+        private final ModelCache&lt;DoubanBookCoverImage, DoubanBookCoverImage&gt; mModelCache = new ModelCache&lt;&gt;(500);
+
+        @Override
+        public ModelLoader&lt;DoubanBookCoverImage, InputStream&gt; build(Context context, GenericLoaderFactory factories) {
+
+            return new CustomGlideImageLoader(mModelCache);
+        }
+
+        @Override
+        public void teardown() {
+
+        }
+    }
+}
+</code></pre>
+<p>可以看到<code>getResourceFetcher</code>都是差不多的.里面的<code>DoubanBookCoverImage</code>类型是我自定义的数据类型,里面主要储存着要搜索的ISBN,对应着<code>BaseGlideUrlLoader</code>里的<code>GlideUrl</code>,如果你看了<code>GlideUrl</code>的定义,会发现里面主要是储存Url,也不是很复杂.</p>
+<p>我自定义的类里面还有一个<code>Factory</code>类,这个和把你自定义的Loader加载入Glide有关,随后我会讲.</p>
+<h4 id="customglidefetcher">CustomGlideFetcher</h4>
+<p>看我自定义的<code>DataFetcher</code></p>
+<pre><code class="language-java">public class CustomGlideFetcher implements DataFetcher&lt;InputStream&gt; {
+    private final DoubanBookCoverImage mdoubanBookCoverImage;
+    private volatile boolean mIsCanceled;
+    private InputStream mInputStream;
+    private Subscriber urlSubscriber;
+    private Subscriber downSubscriber;
+
+    public CustomGlideFetcher(DoubanBookCoverImage doubanBookCoverImage) {
+        mdoubanBookCoverImage = doubanBookCoverImage;
+        urlSubscriber = new Subscriber&lt;String&gt;() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(String s) {
+                mdoubanBookCoverImage.setUrl(s);
+            }
+
+        };
+        downSubscriber = new Subscriber&lt;ResponseBody&gt;() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(ResponseBody responseBody) {
+                mInputStream = responseBody.byteStream();
+            }
+        };
+    }
+
+    @Override
+    public InputStream loadData(Priority priority) throws Exception {
+        String url = mdoubanBookCoverImage.getUrl();
+        if (url == null) {
+            if (mIsCanceled) {
+                return null;
+            }
+            /*获取url*/
+            DoubanApi.getDoubanSearch().doubanSearch(mdoubanBookCoverImage.getISBN().substring(9).replace(&quot;-&quot;, &quot;&quot;)).map(new Func1&lt;String, String&gt;() {
+                @Override
+                public String call(String s) {
+                    return DoubanParse.getbookcover(s);
+                }
+            }).subscribe(urlSubscriber);
+            if (mdoubanBookCoverImage.getUrl() == null) {
+                return null;
+            }
+        }
+        if (mIsCanceled) {
+            return null;
+        }
+        /*下载图片*/
+        DoubanApi.getDoubanDownImage().downImage(mdoubanBookCoverImage.getUrl()).subscribe(downSubscriber);
+        return mInputStream;
+    }
+    /*关闭数据流*/
+    @Override
+    public void cleanup() {
+        if (mInputStream != null) {
+            try {
+                mInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                mInputStream = null;
+            }
+        }
+
+    }
+
+    @Override
+    public String getId() {
+        return mdoubanBookCoverImage.getId();
+    }
+    /*取消请求*/
+    @Override
+    public void cancel() {
+        mIsCanceled = true;
+        if (urlSubscriber.isUnsubscribed()) {
+            urlSubscriber.unsubscribe();
+        }
+        if (downSubscriber.isUnsubscribed()) {
+            downSubscriber.unsubscribe();
+        }
+    }
+}
+</code></pre>
+<p>写这个的时候我参考了Glide自带的<a href="https://github.com/bumptech/glide/blob/master/library/src/main/java/com/bumptech/glide/load/data/HttpUrlFetcher.java"><code>HttpUrlFetcher</code></a>的写法.数据获取的部分我使用的是Retrofit+Rxjava,可以很方便的控制数据加载与取消.如果你对这俩不了解,用其他的网络加载库也是可以的.</p>
+<h4 id="把自定义的customglideimageloader加载入glide">把自定义的CustomGlideImageLoader加载入Glide</h4>
+<p>我们要想办法在Glide中使用我们自定义的Loader,有两种方法<br>
+1.每次在使用Glide时使用.using(new MyUrlLoader())方法.</p>
+<pre><code class="language-java">Glide.with(yourFragment)
+    .using(new MyUrlLoader())
+    .load(yourModel)
+    .into(yourView);
+</code></pre>
+<p>2.在mainfests中注册一下<br>
+你需要实现一个GlideModule,在里面就需要我们刚刚讲到的<code>Factory</code>类了</p>
+<pre><code class="language-java">public class CustomGllideMoudle implements GlideModule {
+    @Override
+    public void applyOptions(Context context, GlideBuilder builder) {
+
+    }
+
+    @Override
+    public void registerComponents(Context context, Glide glide) {
+        glide.register(DoubanBookCoverImage.class, InputStream.class, new CustomGlideImageLoader.Factory());
+    }
+}
+</code></pre>
+<p>然后在mainfests中注册</p>
+<pre><code>&lt;meta-data
+            android:name=&quot;com.swuos.ALLFragment.library.libsearchs.search.model.GlideV.CustomGllideMoudle&quot;
+            android:value=&quot;GlideModule&quot;/&gt;
+</code></pre>
+<p>用的时候你需要用from方法来引入你自定义的数据类型,在load方法里使用你的自定义类型数据就可以了.</p>
+<pre><code class="language-java">Glide.with(context).from(DoubanBookCoverImage.class).load(new DoubanBookCoverImage()).into(your_view);
+</code></pre>
+<p>我没有贴我自定义的数据类型<code>DoubanBookCoverImage</code>的代码,不过你可以来看完整的.<br>
+完整代码在这里<br>
+https://github.com/swuos/openswu-android/tree/master/app/src/main/java/com/swuos/ALLFragment/library/libsearchs/search/model/GlideV</p>
+<p>https://github.com/swuos/openswu-android/blob/master/app/src/main/java/com/swuos/ALLFragment/library/libsearchs/search/model/douabn/DoubanBookCoverImage.java</p>
+<p>https://github.com/swuos/openswu-android/blob/master/app/src/main/java/com/swuos/ALLFragment/library/libsearchs/search/adapter/RecycleAdapterSearch.java<br>
+完<br>
+第一次写这样的文章,有没说明白的地方可以email我.<br>
+thx</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#%E5%B0%9D%E8%AF%95%E4%B8%80">尝试一</a></li>
+<li><a href="#%E5%B0%9D%E8%AF%95%E4%BA%8C">尝试二</a>
+<ul>
+<li><a href="#%E4%B8%BB%E8%A6%81%E5%8E%9F%E7%90%86">主要原理</a></li>
+<li><a href="#customglideimageloader">CustomGlideImageLoader</a></li>
+<li><a href="#customglidefetcher">CustomGlideFetcher</a></li>
+<li><a href="#%E6%8A%8A%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84customglideimageloader%E5%8A%A0%E8%BD%BD%E5%85%A5glide">把自定义的CustomGlideImageLoader加载入Glide</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/retrofit-2-token-authentication-on-android">
+              <h3 class="post-title">
+                Retrofit （2） — Token Authentication on Android
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

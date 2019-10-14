@@ -1,0 +1,485 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>使用Intellij IDEA 编写一个Android Studio插件 | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              使用Intellij IDEA 编写一个Android Studio插件
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>本文记录了使用Intellij idea 编写插件的过程</p>
+<!--more-->
+<h2 id="背景">背景</h2>
+<p>最近在练习Android的的自定义View，遇到把attrs.xml文件的属性设置到代码里的时候，一大堆的代码写得我心烦（其实是因为懒），我就想到可以自动化导入，就像<a href="https://github.com/boredream/BorePlugin">LayoutCreator</a>这个插件一样。</p>
+<h2 id="项目分析">项目分析</h2>
+<ul>
+<li>在自定义view里根据选择的declare-styleable name来在attrs.xml文件里选择对应的配置。</li>
+<li>根据获取的配置名和配置的类型来自动导入代码<br>
+例如：<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/72478765-file_1490160278473_9da7.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""><br>
+我选择了TopBar这个declare-styleable名。我就要在attrs.xml里找到它的配置并自动生成变量和代码<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/84534662-file_1490160412539_15266.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""><br>
+自动生成的效果如下<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/45922929-file_1490160580655_10bf9.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""><br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/75833796-file_1490160631408_10784.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""></li>
+</ul>
+<h2 id="搜集资料">搜集资料</h2>
+<p>毕竟我也是第一次<br>
+以下是我搜集到的资料，这个插件的实现离不开这些作者的文章，事实上这篇文章也参考了以下的资料。</p>
+<ul>
+<li><a href="https://moxun.me/archives/28">Intellij IDEA插件开发（一）快速入门</a></li>
+<li><a href="http://blog.csdn.net/zhangke3016/article/details/53245530">动手试试Android Studio插件开发</a></li>
+<li><a href="http://blog.csdn.net/lmj623565791/article/details/51548272">学会编写Android Studio插件 别停留在用的程度了</a><br>
+官方文档</li>
+<li><a href="https://intellij-support.jetbrains.com/hc/en-us/community/topics/200366979-IntelliJ-IDEA-Open-API-and-Plugin-Development">Intellij IDEA插件开发者社区</a></li>
+<li><a href="http://www.jetbrains.org/intellij/sdk/docs/">Intellij IDEA插件开发文档</a></li>
+</ul>
+<h2 id="正式开始">正式开始</h2>
+<p>首先要知道Android studio是基于Intellij Platform开发出来的，和Intellij IDEA是一家。不管是Intelllij IDEA的插件还是Android studio的插件都需要在Intellij IDEA里开发。</p>
+<h3 id="1-在intellij-idea里新建一个插件项目">1.  在Intellij IDEA里新建一个插件项目</h3>
+<p>在这一步需要导入两个sdk，一个是java的sdk，一个是Intellij PLatform的sdk。<br>
+前者就选择你的java sdk安装目录，我的是<em>C:\Program Files\Java\jdk1.8.0_121</em><br>
+后者就是你的Intellij IDEA安装目录，我的是D:\IntelliJ IDEA Community Edition 15.0<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/67776113-file_1490150906473_46a1.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""></p>
+<h3 id="2新建完之后项目里会出现这几个文件夹">2.新建完之后项目里会出现这几个文件夹</h3>
+<p><img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/77343184-file_1490166691212_65ed.png?imageMogr2/auto-orient/format/webp/interlace/1/blur/1x0/quality/100%7Cwatermark/2/text/TXJhbi5naXRodWIuaW8=/font/5b6u6L2v6ZuF6buR/fontsize/240/fill/I0VCRUFEOA==/dissolve/100/gravity/SouthEast/dx/10/dy/10%7Cimageslim" alt=""><br>
+plugin.xml里是这个插件的基本信息和配置，里面代表的信息如下<br>
+id：这里填写插件id，比如我的是com.mran.plugin.lazyattrs<br>
+name：这里是插件的名字，比如我的是lazyattrs<br>
+version：这个是插件的版本<br>
+vendor：你的联系方式，email，网址<br>
+description：关于这个插件的介绍<br>
+change-notes：版本更新信息<br>
+actions:这里的内容决定了你的插件将会在哪里出现。</p>
+<p>src文件夹主要是放插件代码</p>
+<h3 id="3新建一个代码文件">3.新建一个代码文件。</h3>
+<p>右键单击src文件夹--&gt;new--&gt;Action<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/31356218-file_1490168138970_c9cf.png" alt=""><br>
+这个是新建Action的配置，分别是<br>
+Action id，<br>
+Class name（其实就是生成的java类的名字）<br>
+name<br>
+Description。<br>
+下面的Add to Group决定了插件出现的位置，比如我选择了GenerateGroup(Generate)，javaGenerateGroup1()， fitst，这样它就会在你按alt+insert的时候出来，而且还是在第一个位置。如图（图中的我设置的是last，最后一个位置）<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/98870687-file_1490168636852_34f0.png" alt=""><br>
+下面还有KeyBoard ShortCuts，就是设置快捷键。<br>
+填写完之后，点击ok。就会在src文件夹下生成一个以设置的Class name为名的一个文件，同时还会在plugin.xml里写入这些配置<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-22/33297355-file_1490169083954_1a5e.png" alt=""></p>
+<h3 id="4编写代码">4.编写代码</h3>
+<p>先观察生成的代码文件</p>
+<pre><code class="language-java">public class LazyattrsAction extends AnAction {
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+        // TODO: insert action logic here
+    }
+}
+</code></pre>
+<p>当这插件被触发时就会执行<code>actionPerformed()</code>里的方法,所以我们就要把代码写进这个方法里。</p>
+<h4 id="41-获得在代码编辑器里获得选择到的文字">4.1 获得在代码编辑器里获得选择到的文字。</h4>
+<pre><code> //获取选择的文字
+    private String getSelectWord(AnActionEvent e) {
+        Editor mEditor = e.getData(PlatformDataKeys.EDITOR);
+        if (null != mEditor) {
+
+            SelectionModel model = mEditor.getSelectionModel();
+            final String selectedText = model.getSelectedText();
+            if (!TextUtils.isEmpty(selectedText)) {
+                return selectedText;
+            }
+        }
+        return &quot;&quot;;
+
+    }
+</code></pre>
+<p>如果你也需要获取选择的文字，这段代码可以直接使用，事实上，这段代码也是我从别处参考并稍作更改的。</p>
+<h4 id="42-根据获取到的文字来找到attrsxml里的对应的declare-styleable">4.2 根据获取到的文字来找到attrs.xml里的对应的<code>declare-styleable</code></h4>
+<p>这一步还可以分解成两步<br>
+ 1.找到attrs.xml文件<br>
+ 2.解析这个文件</p>
+<h5 id="421-找到attrsxml文件">4.2.1 找到attrs.xml文件</h5>
+<p>Intellij PLatform SDK为我们提供了一个<code>FilenameIndex.getFilesByName</code>方法</p>
+<pre><code class="language-java">    //获取attr文件
+    private XmlFile getFile(Project project) {
+        PsiFile[] mPsiFiles = FilenameIndex.getFilesByName(project, &quot;attrs.xml&quot;, GlobalSearchScope.projectScope(project));
+        if (mPsiFiles.length &lt;= 0) {
+            return null;
+        }
+        return (XmlFile) mPsiFiles[0];
+    }
+</code></pre>
+<p>第一个参数是当前项目，可以通过<code>e.getProject()</code>得到<br>
+第二个参数是需要找的文件名字<br>
+第三个参数是搜索的范围，这里的搜索范围我指定的是project，我之前使用的是<code>GlobalSearchScope.allScope(project))</code>，在Intellij IDEA里能正常工作，但是在Android studio里智能找到同一个文件夹下的文件，换成了<code>GlobalSearchScope.projectScope(project)</code>之后就能正常工作了。<br>
+这个方法返回的找到的所有匹配文件，一个PsiFile类型的数组。最后为了我们方便解析，还要把它转换成XmlFile类型。</p>
+<h5 id="422-解析xml文件">4.2.2 解析xml文件</h5>
+<pre><code>//对文件进行解析
+    private List&lt;ElementWrapper&gt; getAttrs(XmlFile xmlFile) {
+
+        if (xmlFile.getRootTag() == null) {
+            return null;
+        }
+        XmlTag xmlTags[] = xmlFile.getRootTag().getSubTags();
+        List&lt;ElementWrapper&gt; elementWrappers = new ArrayList&lt;ElementWrapper&gt;();
+        for (XmlTag x1 : xmlTags) {
+            //解析到 &lt;declare-styleable name=&quot;TopBar&quot;&gt;
+            ElementWrapper elementWrapper = new ElementWrapper();
+            //解析style名
+            elementWrapper.setStyleName(x1.getAttributeValue(&quot;name&quot;));
+            XmlTag xmlTag2[] = x1.getSubTags();
+            List&lt;MyElement&gt; elements = new ArrayList&lt;MyElement&gt;();
+            //解析到  &lt;attr name=&quot;title&quot; format=&quot;string&quot;/&gt;
+            for (XmlTag x2 : xmlTag2) {
+                MyElement myElement = new MyElement();
+                //解析配置名和配置对应的数据格式
+                myElement.setName(x2.getAttributeValue(&quot;name&quot;));
+                myElement.setFormat(x2.getAttributeValue(&quot;format&quot;));
+                elements.add(myElement);
+            }
+            elementWrapper.setElements(elements);
+            elementWrappers.add(elementWrapper);
+        }
+        return elementWrappers;
+    }
+
+</code></pre>
+<p>这里的返回值是<code>List&lt;ElementWrapper&gt;</code>,其中的<code>ElementWrapepr</code>是我自定义的数据类型.<br>
+因为这个文件是xml格式的,用过java的jsoup库或者是python的beautifulsoup库的人对于解析会比较熟悉.<br>
+先用</p>
+<pre><code>if (xmlFile.getRootTag() == null) {
+            return null;
+        }
+</code></pre>
+<p>获取根节点,判断是否为空,再进行下一步.<br>
+在用<code>getSubTags()</code>获取直接子节点.<br>
+比如这个xml</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;resources&gt;
+    &lt;declare-styleable name=&quot;TopBar&quot;&gt;
+        &lt;attr name=&quot;title&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;titleSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;titleColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;leftText&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;leftTextColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;leftTextSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;leftBackGround&quot; format=&quot;reference|color&quot;/&gt;
+        &lt;attr name=&quot;rightText&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;rightTextColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;rightTextSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;rightBackGround&quot; format=&quot;reference|color&quot;/&gt;
+    &lt;/declare-styleable&gt;
+&lt;/resources&gt;
+</code></pre>
+<p><code>getRootTag()</code>获得的就是<code>&lt;resources&gt;</code>这一层的内容,<code>getSubTags()</code>就是获得<code>&lt;resource&gt;</code>的直接子节点,也就是<code>declare-styleable</code>,再次对<code>declare-styleable</code>这一节点使用<code>getSubTags()</code>就是获得它的直接子节点,也就是</p>
+<pre><code class="language-xml">        &lt;attr name=&quot;title&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;titleSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;titleColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;leftText&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;leftTextColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;leftTextSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;leftBackGround&quot; format=&quot;reference|color&quot;/&gt;
+        &lt;attr name=&quot;rightText&quot; format=&quot;string&quot;/&gt;
+        &lt;attr name=&quot;rightTextColor&quot; format=&quot;color&quot;/&gt;
+        &lt;attr name=&quot;rightTextSize&quot; format=&quot;dimension&quot;/&gt;
+        &lt;attr name=&quot;rightBackGround&quot; format=&quot;reference|color&quot;/&gt;
+</code></pre>
+<p>使用起来还是很简单哒.<br>
+如果要获得这一节点的内容,可以使用<code>getAttributeValue(name)</code>,比如我对<code>declare-styleable</code>这一节点使用<code>getAttributeValue(&quot;name)</code>获得结果就是&quot;TopBar&quot;.很简单哒.<br>
+不过要注意一点的就是,每次获取最好都判断一下非空.<br>
+官方给我们提供了另一种思路.<a href="http://www.jetbrains.org/intellij/sdk/docs/reference_guide/frameworks_and_external_apis/xml_dom_api.html">XML DOM API</a>看这个会详细很多.</p>
+<h4 id="43将代码写入">4.3将代码写入</h4>
+<p>还是将问题拆分一下<br>
+1.找到要写入的类<br>
+2.根据配置生成要写入的代码<br>
+3.写入文件的相应位置.</p>
+<h5 id="431-找到要写入的类">4.3.1 找到要写入的类</h5>
+<pre><code class="language-java">   private PsiClass getWriteClass(AnActionEvent event) {
+        final Project project = event.getProject();
+        PsiFile psiFile;
+        PsiClass psiClass = null;
+        Editor editor = event.getData(PlatformDataKeys.EDITOR);
+        if (project != null) {
+            Document document;
+            if (editor != null) {
+                document = editor.getDocument();
+                psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
+                if ((psiFile) != null) {
+                    psiClass = ((PsiJavaFile) psiFile).getClasses()[0];
+                }
+            }
+        }
+        return psiClass;
+    }
+</code></pre>
+<p>刚开始也不知怎么找到当前编辑的类,后来去社区搜索,才弄清楚了.</p>
+<h5 id="432生成代码">4.3.2生成代码</h5>
+<p>生成代码的时候要注意,不要在ui线程,也就是主线程写入,要另外开一个线程.<br>
+比如</p>
+<pre><code> //写入代码
+    private void writeToClass(AnActionEvent e) {
+        final Project project = e.getProject();
+        final PsiClass psiClass;
+        psiClass = getWriteClass(e);
+        if (psiClass != null)
+            new WriteCommandAction.Simple(project) {
+                @Override
+                protected void run() throws Throwable {
+
+                    write(psiClass, project);
+                }
+            }.execute();
+
+
+    }
+</code></pre>
+<p>生成变量.</p>
+<pre><code>    //写入变量
+    private void writeField(PsiClass psiClass, PsiElementFactory psiElementFactory) {
+        //写入生成的变量
+        for (ElementWrapper e : elementWrappers) {
+            if (e.getStyleName().equals(styleableName))
+                for (MyElement m : e.getElements()) {
+                    String type = &quot;&quot;;
+                    switch (m.getFormat()) {
+                        case Costant.STRING:
+                            type = &quot;String &quot;;
+                            break;
+                        case Costant.BOOL:
+                            type = &quot;boolean &quot;;
+                            break;
+                        case Costant.COLOR:
+                            type = &quot;int &quot;;
+                            break;
+                        case Costant.DIMENSION:
+                            type = &quot;float &quot;;
+                            break;
+                    }
+                    psiClass.add(psiElementFactory.createFieldFromText(type + m.getName() + &quot;;\n&quot;, psiClass));
+                }
+        }
+    }
+</code></pre>
+<p>可以看到关键的写入是这一句<code>psiClass.add(psiElementFactory.createFieldFromText(type + m.getName() + &quot;;\n&quot;, psiClass));</code><br>
+其中的<code>psiElementFactory.createFieldFromText(String,PsiElement)</code>,还有另外一个同样功能的方法<code>psiElementFactory.createField(String,PsiType)</code>这俩方法的不同之处在于前者是直接写入String里的内容,后者是根据PsiType的值来确定一个类型.我建议使用前者,比较直观一点.</p>
+<p>然后是生成方法</p>
+<pre><code>    //写入方法
+    private void writeMethod(PsiClass psiClass, PsiElementFactory psiElementFactory) {
+        //找到要写入的方法.
+        PsiMethod psiMethod[] = psiClass.findMethodsByName(&quot;getAttrs&quot;, false);
+        PsiMethod psiMethod1;
+        //不存在就创建一个.
+        if (psiMethod.length == 0) {
+            psiMethod1 = (PsiMethod) psiClass.add(psiElementFactory.createMethod(&quot;getAttrs&quot;, PsiType.VOID));
+        } else
+            psiMethod1 = psiMethod[0];
+        //写入代码
+        for (ElementWrapper e : elementWrappers) {
+            if (e.getStyleName().equals(styleableName))
+                for (MyElement m : e.getElements()) {
+                    psiMethod1.getBody().add(psiElementFactory.createStatementFromText(getStatement(m), psiClass));
+                }
+        }
+    }
+</code></pre>
+<p>要先确定这个方法是否存在,用<code>psiClass.findMethodsByName(&quot;getAttrs&quot;, false);</code><br>
+不存在就创建一个,<code>psiClass.add(psiElementFactory.createMethod(&quot;getAttrs&quot;, PsiType.VOID));</code><br>
+这个<code>psiElementFactory.createMethod(String,PsiType)</code>同样也可以用<code>psiElementFactory.createMethodFromText(String,PsiElement)</code>.<br>
+然后是在这个方法内部写入方法,用<code>psiMethod1.getBody().add(psiElementFactory.createStatementFromText(getStatement(m), psiClass));</code>需要注意的是<code>(psiElementFactory.createStatementFromText(String,PsiElement)</code>中的String,必须是一个语句,不能包含多个语句.</p>
+<p>写入之后就完成了插件的编写</p>
+<h3 id="5测试">5.测试</h3>
+<p>点击Intellij IDEA的运行,会自动开启一个已经安装好刚刚编写的插件的新IDEA窗口,在里面可以测试你的插件是否已经正确运行.当然下断点进行Debug也是可以的.</p>
+<h3 id="6最后生成一个jar安装包">6.最后生成一个jar安装包</h3>
+<p>点击Build-&gt;Prepare Plugin Module'name' ForDeployment,生成安装包.这样就可以在Android studio里安装运行了<br>
+<img src="http://oe38oe3ti.bkt.clouddn.com/17-3-24/84273674-file_1490335659330_b988.png" alt=""></p>
+<h3 id="最后">最后</h3>
+<p>完整的代码在这里<a href="https://github.com/Mran/LazyAttrs">LazyAttrs</a><br>
+这篇文章只是记录我编写这个插件的过程,算是以完成目的为导向,有很多内容没有说到.Intellij Platform SDK有很多还没有了解过,我遇到的很多问题都是通过在上面的开发者社区搜索到的.<br>
+如果有幸帮到你,那是最好不过.<br>
+下台鞠躬.</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90">项目分析</a></li>
+<li><a href="#%E6%90%9C%E9%9B%86%E8%B5%84%E6%96%99">搜集资料</a></li>
+<li><a href="#%E6%AD%A3%E5%BC%8F%E5%BC%80%E5%A7%8B">正式开始</a>
+<ul>
+<li><a href="#1-%E5%9C%A8intellij-idea%E9%87%8C%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%8F%92%E4%BB%B6%E9%A1%B9%E7%9B%AE">1.  在Intellij IDEA里新建一个插件项目</a></li>
+<li><a href="#2%E6%96%B0%E5%BB%BA%E5%AE%8C%E4%B9%8B%E5%90%8E%E9%A1%B9%E7%9B%AE%E9%87%8C%E4%BC%9A%E5%87%BA%E7%8E%B0%E8%BF%99%E5%87%A0%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9">2.新建完之后项目里会出现这几个文件夹</a></li>
+<li><a href="#3%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E4%BB%A3%E7%A0%81%E6%96%87%E4%BB%B6">3.新建一个代码文件。</a></li>
+<li><a href="#4%E7%BC%96%E5%86%99%E4%BB%A3%E7%A0%81">4.编写代码</a>
+<ul>
+<li><a href="#41-%E8%8E%B7%E5%BE%97%E5%9C%A8%E4%BB%A3%E7%A0%81%E7%BC%96%E8%BE%91%E5%99%A8%E9%87%8C%E8%8E%B7%E5%BE%97%E9%80%89%E6%8B%A9%E5%88%B0%E7%9A%84%E6%96%87%E5%AD%97">4.1 获得在代码编辑器里获得选择到的文字。</a></li>
+<li><a href="#42-%E6%A0%B9%E6%8D%AE%E8%8E%B7%E5%8F%96%E5%88%B0%E7%9A%84%E6%96%87%E5%AD%97%E6%9D%A5%E6%89%BE%E5%88%B0attrsxml%E9%87%8C%E7%9A%84%E5%AF%B9%E5%BA%94%E7%9A%84declare-styleable">4.2 根据获取到的文字来找到attrs.xml里的对应的<code>declare-styleable</code></a>
+<ul>
+<li><a href="#421-%E6%89%BE%E5%88%B0attrsxml%E6%96%87%E4%BB%B6">4.2.1 找到attrs.xml文件</a></li>
+<li><a href="#422-%E8%A7%A3%E6%9E%90xml%E6%96%87%E4%BB%B6">4.2.2 解析xml文件</a></li>
+</ul>
+</li>
+<li><a href="#43%E5%B0%86%E4%BB%A3%E7%A0%81%E5%86%99%E5%85%A5">4.3将代码写入</a>
+<ul>
+<li><a href="#431-%E6%89%BE%E5%88%B0%E8%A6%81%E5%86%99%E5%85%A5%E7%9A%84%E7%B1%BB">4.3.1 找到要写入的类</a></li>
+<li><a href="#432%E7%94%9F%E6%88%90%E4%BB%A3%E7%A0%81">4.3.2生成代码</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5%E6%B5%8B%E8%AF%95">5.测试</a></li>
+<li><a href="#6%E6%9C%80%E5%90%8E%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AAjar%E5%AE%89%E8%A3%85%E5%8C%85">6.最后生成一个jar安装包</a></li>
+<li><a href="#%E6%9C%80%E5%90%8E">最后</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/telegram-yue-du-xin-de-ye-mian-jia-gou-1">
+              <h3 class="post-title">
+                Telegram阅读心得---页面架构(1)
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

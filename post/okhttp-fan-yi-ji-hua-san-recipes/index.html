@@ -1,0 +1,612 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>okhttp翻译计划（三）--Recipes | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              okhttp翻译计划（三）--Recipes
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                17 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/YaFfFJTwH" class="post-tag">
+                  # 翻译计划
+                </a>
+              
+                <a href="https://mran.github.io/tag/pHVf30Vl-n" class="post-tag">
+                  # okhttp
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>第三部分:Recipes 用例</p>
+<!--more-->
+<h2 id="recipes"><a href="https://github.com/square/okhttp/wiki/Recipes">Recipes</a></h2>
+<p>我们写了一些用例来演示怎样用OkHttp来解决常见问题.你可以通过阅读这些代码来了解这些东西是怎么协同工作的,并且可以自由的复制粘贴这些例子,这正是他们的作用.</p>
+<h3 id="synchronous-get"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/SynchronousGet.java">Synchronous Get</a> 同步GET</h3>
+<p>下载一个文件,打印他的消息头并把他的响应体以字符串的形式打印出来.</p>
+<p>对于小的文档来说,对响应体使用<code>string()</code>方法是十分方便和有效率的.但是如果响应体很大(大于1MB)就要避免使用<code>string()</code>方法,因为它会在内存中加载整个文档.这种情况下,更应该把响应体当做流来处理.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://publicobject.com/helloworld.txt&quot;)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    Headers responseHeaders = response.headers();
+    for (int i = 0; i &lt; responseHeaders.size(); i++) {
+      System.out.println(responseHeaders.name(i) + &quot;: &quot; + responseHeaders.value(i));
+    }
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="asyronous-get"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/AsynchronousGet.java">Asyronous Get</a> 异步GET</h3>
+<p>你可以在一个辅助线程下载一个文件,然后当响应可读取时拿到回调.这个回调是在响应的消息头准备好之后被调用的.读取响应体可能会发生阻塞,OkHttp目前在某些方面没有提供异步API来接收响应体.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://publicobject.com/helloworld.txt&quot;)
+        .build();
+
+    client.newCall(request).enqueue(new Callback() {
+      @Override public void onFailure(Call call, IOException e) {
+        e.printStackTrace();
+      }
+
+      @Override public void onResponse(Call call, Response response) throws IOException {
+        if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+        Headers responseHeaders = response.headers();
+        for (int i = 0, size = responseHeaders.size(); i &lt; size; i++) {
+          System.out.println(responseHeaders.name(i) + &quot;: &quot; + responseHeaders.value(i));
+        }
+
+        System.out.println(response.body().string());
+      }
+    });
+  }
+</code></pre>
+<h3 id="accessing-headers"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/AccessHeaders.java">Accessing Headers</a> 获取消息头</h3>
+<p>典型的HTTP消息头结构就像是<code>Map&lt;String,String&gt;</code>:每个键都对应1个或0个值.但是一些消息头允许有多个值,就像Guava的<a href="http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/Multimap.html">Multimap</a>.举一个例子,对于一个HTTP响应,支持多个变化的消息头是合法,普遍的.OkHttp的APIs尽力使这些个情况处理起来都很方便.</p>
+<p>当写入请求头时,使用<code>header(name,value)</code>来设置唯一的键值对.如果原来存在有值,那么在添加新的值之前,原来的值会被删除.你可以使用<code>addHeader(name,value)</code>来添加一个消息头,这样即使原来存在有,原来的值也不会被删除.</p>
+<p>当读取响应头时,使用<code>header(name)</code>会返回最后一组键值对.通常这也是唯一的一组.如果没有值,那么<code>header(name)</code>会返回null.要以列表的形式读取所有的键值对,请使用<code>headers(name)</code>.</p>
+<p>要想访问所有的消息头,请使用<code>Headers</code>类,该类可以支持以索引的形式访问.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;https://api.github.com/repos/square/okhttp/issues&quot;)
+        .header(&quot;User-Agent&quot;, &quot;OkHttp Headers.java&quot;)
+        .addHeader(&quot;Accept&quot;, &quot;application/json; q=0.5&quot;)
+        .addHeader(&quot;Accept&quot;, &quot;application/vnd.github.v3+json&quot;)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(&quot;Server: &quot; + response.header(&quot;Server&quot;));
+    System.out.println(&quot;Date: &quot; + response.header(&quot;Date&quot;));
+    System.out.println(&quot;Vary: &quot; + response.headers(&quot;Vary&quot;));
+  }
+</code></pre>
+<h3 id="posting-a-string"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PostString.java">Posting a String</a> 发送一个字符串</h3>
+<p>使用一个HTTP POST来发送一个请求体到服务器.这个例子是发送一个markdown文档到一个网站服务器,然后用HTML展示markdown文档.因为整个请求体都保存在内存里,避免使用这个API来发送大文档(大于1MB).</p>
+<pre><code class="language-java"> public static final MediaType MEDIA_TYPE_MARKDOWN
+      = MediaType.parse(&quot;text/x-markdown; charset=utf-8&quot;);
+
+  private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    String postBody = &quot;&quot;
+        + &quot;Releases\n&quot;
+        + &quot;--------\n&quot;
+        + &quot;\n&quot;
+        + &quot; * _1.0_ May 6, 2013\n&quot;
+        + &quot; * _1.1_ June 15, 2013\n&quot;
+        + &quot; * _1.2_ August 11, 2013\n&quot;;
+
+    Request request = new Request.Builder()
+        .url(&quot;https://api.github.com/markdown/raw&quot;)
+        .post(RequestBody.create(MEDIA_TYPE_MARKDOWN, postBody))
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="post-streaming"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PostStreaming.java">Post Streaming</a> 发送数据流</h3>
+<p>我们可以把请求体当做数据流来发送.生成的请求体的内容就是写出来的内容.这个例子里的数据流直接进入<a href="https://github.com/square/okio">Okio</a>的缓冲区.你的程序可能更想要一个输出流,那么你可以使用<code>BufferedSink.outputStream</code>来获取.</p>
+<pre><code class="language-java">public static final MediaType MEDIA_TYPE_MARKDOWN
+      = MediaType.parse(&quot;text/x-markdown; charset=utf-8&quot;);
+
+  private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    RequestBody requestBody = new RequestBody() {
+      @Override public MediaType contentType() {
+        return MEDIA_TYPE_MARKDOWN;
+      }
+
+      @Override public void writeTo(BufferedSink sink) throws IOException {
+        sink.writeUtf8(&quot;Numbers\n&quot;);
+        sink.writeUtf8(&quot;-------\n&quot;);
+        for (int i = 2; i &lt;= 997; i++) {
+          sink.writeUtf8(String.format(&quot; * %s = %s\n&quot;, i, factor(i)));
+        }
+      }
+
+      private String factor(int n) {
+        for (int i = 2; i &lt; n; i++) {
+          int x = n / i;
+          if (x * i == n) return factor(x) + &quot; × &quot; + i;
+        }
+        return Integer.toString(n);
+      }
+    };
+
+    Request request = new Request.Builder()
+        .url(&quot;https://api.github.com/markdown/raw&quot;)
+        .post(requestBody)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="posting-a-file"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PostFile.java">Posting a File</a> 发送一个文件</h3>
+<p>把文件当做请求体是很简单的一件事.</p>
+<pre><code class="language-java">public static final MediaType MEDIA_TYPE_MARKDOWN
+      = MediaType.parse(&quot;text/x-markdown; charset=utf-8&quot;);
+
+  private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    File file = new File(&quot;README.md&quot;);
+
+    Request request = new Request.Builder()
+        .url(&quot;https://api.github.com/markdown/raw&quot;)
+        .post(RequestBody.create(MEDIA_TYPE_MARKDOWN, file))
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="posting-form-parameters"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PostForm.java">Posting form parameters</a> 发送表单参数</h3>
+<p>你可以使用<code>FormBody.Builder</code>来构建一个请求体来使其看起来像一个HTML的<code>&lt;form&gt;</code>标签.键和值将使用一个HTML兼容的表单URL编码格式来编码.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    RequestBody formBody = new FormBody.Builder()
+        .add(&quot;search&quot;, &quot;Jurassic Park&quot;)
+        .build();
+    Request request = new Request.Builder()
+        .url(&quot;https://en.wikipedia.org/w/index.php&quot;)
+        .post(formBody)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="posting-a-mulitipart-request"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PostMultipart.java">Posting a mulitipart request</a> 发送多个请求</h3>
+<p><code>MultipartBody.Builder</code>可以构造一个和HTML文件上传表单兼容的复杂请求体.多重请求体的每部分都是一个请求体,并且可以单独定义每个请求的消息头.如果可以,这些消息头应该描述这些请求体,比如它们的<code>Content-disposition</code>.如果<code>Content-Length</code>和<code>Content-Type</code>消息头可用,那么他们会被紫铜添加.</p>
+<pre><code class="language-java">private static final String IMGUR_CLIENT_ID = &quot;...&quot;;
+  private static final MediaType MEDIA_TYPE_PNG = MediaType.parse(&quot;image/png&quot;);
+
+  private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    // Use the imgur image upload API as documented at https://api.imgur.com/endpoints/image
+    RequestBody requestBody = new MultipartBody.Builder()
+        .setType(MultipartBody.FORM)
+        .addFormDataPart(&quot;title&quot;, &quot;Square Logo&quot;)
+        .addFormDataPart(&quot;image&quot;, &quot;logo-square.png&quot;,
+            RequestBody.create(MEDIA_TYPE_PNG, new File(&quot;website/static/logo-square.png&quot;)))
+        .build();
+
+    Request request = new Request.Builder()
+        .header(&quot;Authorization&quot;, &quot;Client-ID &quot; + IMGUR_CLIENT_ID)
+        .url(&quot;https://api.imgur.com/3/image&quot;)
+        .post(requestBody)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<h3 id="parse-a-json-response-with-gson"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/ParseResponseWithGson.java">Parse a Json Response With Gson</a> 使用Gson来解析JSON格式的响应</h3>
+<p><a href="http://code.google.com/p/google-gson/">Gson</a>是一个很好用的API,它可以用来进行JSON和Java对象的转换.这里我们用它来解码一个来自Github API的的JSON响应.</p>
+<p>注意当解码响应体时,<code>ResponseBody.charStream()</code>使用<code>Content-Type</code>响应头来选择使用相应的字符集.如果没有特殊的规定字符集,那它将会使用默认的<code>UTF-8</code>.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+  private final Gson gson = new Gson();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;https://api.github.com/gists/c2a7c39532239ff261be&quot;)
+        .build();
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    Gist gist = gson.fromJson(response.body().charStream(), Gist.class);
+    for (Map.Entry&lt;String, GistFile&gt; entry : gist.files.entrySet()) {
+      System.out.println(entry.getKey());
+      System.out.println(entry.getValue().content);
+    }
+  }
+
+  static class Gist {
+    Map&lt;String, GistFile&gt; files;
+  }
+
+  static class GistFile {
+    String content;
+  }
+</code></pre>
+<h3 id="response-caching"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/CacheResponse.java">Response Caching</a> 响应缓存</h3>
+<p>为了缓存响应,你需要一个可以读写的高速缓存目录,并且要对缓存的大小做一个限制.高速缓存目录应该是保密的,不被信任的应用不会读取出它的内容.<br>
+当多个缓存器同时访问相同的高速缓存目录时会出现错误.大多数应用应该只调用<code>new OkHttpClient()</code>一次,然后在其他地方使用它的相同实例,否则两个缓存实例就会发生冲突.响应缓存就会发生污染,还可能会使你的程序宕掉.</p>
+<p>响应缓存使用HTTP消息头来设置所有的配置.你可以添加一个请求头比如<code>Cache-control: max-stale=3600</code>,然后OkHttp就会按照这个配置执行.你的网站服务器会使用它自己的响应消息头来设置了多长时间响应会被缓存一次,就=像这样<code>Cache-Control: max-age=9600</code>.这样缓存头可以强制得到一个缓存的响应,强制一个网络响应,或者强制使用一个条件性的GET的来网络响应进行认证.(这句翻译的不是很清楚.)</p>
+<pre><code class="language-java"> private final OkHttpClient client;
+
+  public CacheResponse(File cacheDirectory) throws Exception {
+    int cacheSize = 10 * 1024 * 1024; // 10 MiB
+    Cache cache = new Cache(cacheDirectory, cacheSize);
+
+    client = new OkHttpClient.Builder()
+        .cache(cache)
+        .build();
+  }
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://publicobject.com/helloworld.txt&quot;)
+        .build();
+
+    Response response1 = client.newCall(request).execute();
+    if (!response1.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response1);
+
+    String response1Body = response1.body().string();
+    System.out.println(&quot;Response 1 response:          &quot; + response1);
+    System.out.println(&quot;Response 1 cache response:    &quot; + response1.cacheResponse());
+    System.out.println(&quot;Response 1 network response:  &quot; + response1.networkResponse());
+
+    Response response2 = client.newCall(request).execute();
+    if (!response2.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response2);
+
+    String response2Body = response2.body().string();
+    System.out.println(&quot;Response 2 response:          &quot; + response2);
+    System.out.println(&quot;Response 2 cache response:    &quot; + response2.cacheResponse());
+    System.out.println(&quot;Response 2 network response:  &quot; + response2.networkResponse());
+
+    System.out.println(&quot;Response 2 equals Response 1? &quot; + response1Body.equals(response2Body));
+  }
+</code></pre>
+<p>如果只想从网络获取响应,你可以使用<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/CacheControl.html#FORCE_NETWORK"><code>CacheControl.FORCE_NETWORK</code></a>.如果只想从缓存获取响应,你可以使用<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/CacheControl.html#FORCE_CACHE"><code>CacheControl.FROCE_CACHE</code></a>.警告:如果你使用了<code>FORCE_CACHE</code>但是响应需要从网络获取,OkHttp将会返回<code>504 Unsatisfiable Request</code>.</p>
+<h3 id="canceing-a-call"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/CancelCall.java">Canceing a Call</a> 取消请求</h3>
+<p>你可以使用<code>Call.cancel()</code>来立刻停止一个正在进行的请求.如果有一个线程正在写请求或者读取响应,那么将会收到一个<code>IOExeption</code>.当一个请求不在必须时,你这样做可以节省网络资源.比如当你的用户离开应用的时候.同步或者异步的请求都会被取消.</p>
+<pre><code class="language-java">private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+  private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://httpbin.org/delay/2&quot;) // This URL is served with a 2 second delay.
+        .build();
+
+    final long startNanos = System.nanoTime();
+    final Call call = client.newCall(request);
+
+    // Schedule a job to cancel the call in 1 second.
+    executor.schedule(new Runnable() {
+      @Override public void run() {
+        System.out.printf(&quot;%.2f Canceling call.%n&quot;, (System.nanoTime() - startNanos) / 1e9f);
+        call.cancel();
+        System.out.printf(&quot;%.2f Canceled call.%n&quot;, (System.nanoTime() - startNanos) / 1e9f);
+      }
+    }, 1, TimeUnit.SECONDS);
+
+    try {
+      System.out.printf(&quot;%.2f Executing call.%n&quot;, (System.nanoTime() - startNanos) / 1e9f);
+      Response response = call.execute();
+      System.out.printf(&quot;%.2f Call was expected to fail, but completed: %s%n&quot;,
+          (System.nanoTime() - startNanos) / 1e9f, response);
+    } catch (IOException e) {
+      System.out.printf(&quot;%.2f Call failed as expected: %s%n&quot;,
+          (System.nanoTime() - startNanos) / 1e9f, e);
+    }
+  }
+</code></pre>
+<h3 id="timeout"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/ConfigureTimeouts.java">Timeout</a> 超时</h3>
+<p>当请求不可达时,你可以设置超时来结束这个请求.网络断开可能是由客户端的连通出现了问题造成的,也可能能是服务器的问题,或者是介于二者之间的问题.OkHttp支持设置连接,读取,写入的超时.</p>
+<pre><code class="language-java">private final OkHttpClient client;
+
+  public ConfigureTimeouts() throws Exception {
+    client = new OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build();
+  }
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://httpbin.org/delay/2&quot;) // This URL is served with a 2 second delay.
+        .build();
+
+    Response response = client.newCall(request).execute();
+    System.out.println(&quot;Response completed: &quot; + response);
+  }
+</code></pre>
+<h3 id="per-call-configuration"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/PerCallSettings.java">Per-call Configuration</a> 每个请求的设置.</h3>
+<p>所有的HTTP连接设置都存在于<code>OkHttpClient</code>,包括代理设置,超时设置和缓存设置.当你需要改变单个请求的配置时,调用<code>OkHttpClient.newBuilder()</code>.这会返回一个和原连接享有同样连接池,调度器和配置的构造器(Builder).在下面这个例子里,我们构造了一个使用500ms超时的请求和另一个使用3000ms超时的请求.</p>
+<pre><code class="language-java">private final OkHttpClient client = new OkHttpClient();
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://httpbin.org/delay/1&quot;) // This URL is served with a 1 second delay.
+        .build();
+
+    try {
+      // Copy to customize OkHttp for this request.
+      OkHttpClient copy = client.newBuilder()
+          .readTimeout(500, TimeUnit.MILLISECONDS)
+          .build();
+
+      Response response = copy.newCall(request).execute();
+      System.out.println(&quot;Response 1 succeeded: &quot; + response);
+    } catch (IOException e) {
+      System.out.println(&quot;Response 1 failed: &quot; + e);
+    }
+
+列表项
+
+    try {
+      // Copy to customize OkHttp for this request.
+      OkHttpClient copy = client.newBuilder()
+          .readTimeout(3000, TimeUnit.MILLISECONDS)
+          .build();
+
+      Response response = copy.newCall(request).execute();
+      System.out.println(&quot;Response 2 succeeded: &quot; + response);
+    } catch (IOException e) {
+      System.out.println(&quot;Response 2 failed: &quot; + e);
+    }
+  }
+</code></pre>
+<h3 id="handling-authentrication"><a href="https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/Authenticate.java">Handling authentrication</a> 处理认证</h3>
+<p>OkHttp可以自动重试未经身份验证的请求,当响应的状态码是<code>401</code>未经验证时,一个<code>Authenticator</code>(验证人)被要求提供一个凭据.实现应该构造一个包括缺少的凭据的新请求.如果没有凭据可用,OkHttp将会跳过重试直接返回<code>null</code>.</p>
+<p>使用<code>Response.challenges()</code>来拿到认证要求的方案和范围.当完成了一个基本的(<code>Basic</code>)认证,使用<code>Credentials.basic(username,password)</code>来对请求头编码.</p>
+<pre><code class="language-java">private final OkHttpClient client;
+
+  public Authenticate() {
+    client = new OkHttpClient.Builder()
+        .authenticator(new Authenticator() {
+          @Override public Request authenticate(Route route, Response response) throws IOException {
+            System.out.println(&quot;Authenticating for response: &quot; + response);
+            System.out.println(&quot;Challenges: &quot; + response.challenges());
+            String credential = Credentials.basic(&quot;jesse&quot;, &quot;password1&quot;);
+            return response.request().newBuilder()
+                .header(&quot;Authorization&quot;, credential)
+                .build();
+          }
+        })
+        .build();
+  }
+
+  public void run() throws Exception {
+    Request request = new Request.Builder()
+        .url(&quot;http://publicobject.com/secrets/hellosecret.txt&quot;)
+        .build();
+
+    Response response = client.newCall(request).execute();
+    if (!response.isSuccessful()) throw new IOException(&quot;Unexpected code &quot; + response);
+
+    System.out.println(response.body().string());
+  }
+</code></pre>
+<p>为了避免当认证没有正常工作时进行多次的尝试,你可以返回<code>null</code>来放弃认证.比如,当确切的凭据已经被重试过,你可能就要跳过重试了:</p>
+<pre><code class="language-java">if (credential.equals(response.request().header(&quot;Authorization&quot;))) {
+    return null; // If we already failed with these credentials, don't retry.
+   }
+</code></pre>
+<p>当你遇到了应用定义的重试次数.你也有可能会跳过重试:</p>
+<pre><code class="language-java">if (responseCount(response) &gt;= 3) {
+    return null; // If we've failed 3 times, give up.
+  }
+</code></pre>
+<p>上面的代码都依赖一个<code>responseCount()</code>方法:</p>
+<pre><code class="language-java">private int responseCount(Response response) {
+    int result = 1;
+    while ((response = response.priorResponse()) != null) {
+      result++;
+    }
+    return result;
+  }
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#recipes">Recipes</a>
+<ul>
+<li><a href="#synchronous-get">Synchronous Get</a></li>
+<li><a href="#asyronous-get">Asyronous Get</a></li>
+<li><a href="#accessing-headers">Accessing Headers</a></li>
+<li><a href="#posting-a-string">Posting a String</a></li>
+<li><a href="#post-streaming">Post Streaming</a></li>
+<li><a href="#posting-a-file">Posting a File</a></li>
+<li><a href="#posting-form-parameters">Posting form parameters</a></li>
+<li><a href="#posting-a-mulitipart-request">Posting a mulitipart request</a></li>
+<li><a href="#parse-a-json-response-with-gson">Parse a Json Response With Gson</a></li>
+<li><a href="#response-caching">Response Caching</a></li>
+<li><a href="#canceing-a-call">Canceing a Call</a></li>
+<li><a href="#timeout">Timeout</a></li>
+<li><a href="#per-call-configuration">Per-call Configuration</a></li>
+<li><a href="#handling-authentrication">Handling authentrication</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/okhttp-fan-yi-ji-hua-er-connections">
+              <h3 class="post-title">
+                okhttp翻译计划（二）--Connections
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,328 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retrofit （1）  — Basic Authentication on Android | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Retrofit （1）  — Basic Authentication on Android
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>这是Retrofit系列教程的第二章.本文将向你演示如何使用Retrofit来进行用户名和密码的基本认证.</p>
+<!--More-->
+<p>在第一篇中,我们创建了第一个版本的能够执行API/HTTP请求的安卓客户端.现在我们将在它的基础上添加一些功能,使其能够完成基本的认证.</p>
+<h3 id="integrate-basic-authentication-加入基本认证">Integrate Basic Authentication 加入基本认证</h3>
+<p>现在我们为<code>ServiceGenerator</code>类创建一个添加了认证请求的方法.下面的代码就是拓展之后的<code>ServiceGenerator</code>类.有用于Retrofit1.9和Retrofit2的,看你自己需要的那个就好.</p>
+<h4 id="retrofit19">Retrofit1.9</h4>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;https://your.api-base.url&quot;;
+
+    private static RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint(API_BASE_URL)
+                .setClient(new OkClient(new OkHttpClient()));
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        return createService(serviceClass, null, null);
+    }
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass, String username, String password) {
+        if (username != null &amp;&amp; password != null) {
+            // concatenate username and password with colon for authentication
+            //认证的时候,用户名和密码用冒号连接
+            String credentials = username + &quot;:&quot; + password;
+            // create Base64 encodet string
+            //用Base64对其加密
+            final String basic =
+                    &quot;Basic &quot; + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+
+            builder.setRequestInterceptor(new RequestInterceptor() {
+                @Override
+                public void intercept(RequestFacade request) {
+                    request.addHeader(&quot;Authorization&quot;, basic);
+                    request.addHeader(&quot;Accept&quot;, &quot;application/json&quot;);
+                }
+            });
+        }
+
+        RestAdapter adapter = builder.build();
+        return adapter.create(serviceClass);
+    }
+}
+</code></pre>
+<h4 id="retrofit2">Retrofit2</h4>
+<pre><code class="language-java">public class ServiceGenerator {
+
+    public static final String API_BASE_URL = &quot;https://your.api-base.url&quot;;
+
+    private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+    private static Retrofit.Builder builder =
+            new Retrofit.Builder()
+                    .baseUrl(API_BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create());
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass) {
+        return createService(serviceClass, null, null);
+    }
+
+    public static &lt;S&gt; S createService(Class&lt;S&gt; serviceClass, String username, String password) {
+        if (username != null &amp;&amp; password != null) {
+            String credentials = username + &quot;:&quot; + password;
+            final String basic =
+                    &quot;Basic &quot; + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+
+            httpClient.addInterceptor(new Interceptor() {
+                @Override
+                public Response intercept(Interceptor.Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                        .header(&quot;Authorization&quot;, basic)
+                        .header(&quot;Accept&quot;, &quot;application/json&quot;)
+                        .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            });
+        }
+        OkHttpClient client = httpClient.build();
+        Retrofit retrofit = builder.client(client).build();
+        return retrofit.create(serviceClass);
+    }
+}
+</code></pre>
+<p>新的方法有两个新的参数:<em>username</em>和<em>password</em>.你当然也可以用email来替代username.创建客户端的过程和第一个方法的是差不多的.对于任何HTTP请求和响应处理,我们都可以使用<code>RestAdapter</code>(Retrofit2中的是<code>Retrofit</code>)类来创建一个OkHttp客户端.</p>
+<p>二者的不同在于,我们使用了拦截器<code>RequestInterceptor</code>(Retrofit2中的是<code>Interceptor</code>)来设置认证头部的值.但是这需要我们提供一个<code>username</code>和<code>password</code>,没有的话,是不会执行的.如果你提供的用户名和密码没有通过认证,那么他将会创建一个和第一个方法一样的客户端.</p>
+<p>在认证部分,我们还要调整给出的username/email和password的格式,需要把这两个值用冒号连接起来,然后把连接后的新字符串用Base64加密.</p>
+<p>几乎所有的web服务器和API都会对HTTP请求的<em>Authorization</em>字段进行计算.所以我们要把一个加密的认证加入请求头部.假如你要访问的这个web服务器对用户的认证有其他的指定的头部字段,你就需要把认证调整到你的头部字段了.( In case the webservice you’re going to call with this client specifies another header field to expect the user’s credentials, adjust the header field from Authorization to your header field.)</p>
+<p>如果你想接受到一个特殊格式的服务器响应,<em>Accept</em>头就显得很重要了.在这个例子里,我们想要接受的是JSON格式,因为Retrofit附带的GSON可以序列化返回的JSON内容.</p>
+<h3 id="usage-使用">Usage 使用</h3>
+<p>就像我们在上一篇文章里写的那个例子一样,在ServiceGenerator类里调用一个新方法就行了.我来演示给你看.</p>
+<h4 id="retrofiit19">Retrofiit1.9</h4>
+<pre><code class="language-java">public interface LoginService {  
+    @POST(&quot;/login&quot;)
+    void basicLogin(Callback&lt;User&gt; cb);
+}
+</code></pre>
+<h4 id="retrofit2-2">Retrofit2</h4>
+<pre><code class="language-java">public interface LoginService {  
+    @POST(&quot;/login&quot;)
+    Call&lt;User&gt; basicLogin();
+}
+</code></pre>
+<p>上面的接口只有一个方法:<code>basicLogin</code>.这个方法的返回值里有一个<code>User</code>来储存响应值,并且这个方法也没有添加任何查询参数和路径参数.</p>
+<p>现在你可以创建一个HTTP客户端来发送你的认证了.</p>
+<h4 id="retrofit19-2">Retrofit1.9</h4>
+<pre><code class="language-java">LoginService loginService =  ServiceGenerator.createService(LoginService.class, &quot;user&quot;,&quot;secretpassword&quot;);
+loginService.basicLogin(new Callback&lt;User&gt;() {  
+    @Override
+    public void success(User user, Response response) {
+        // user object available
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        // handle errors, too
+    }
+});
+</code></pre>
+<p>####　Retrofit2</p>
+<pre><code class="language-java">LoginService loginService =  ServiceGenerator.createService(LoginService.class, &quot;user&quot;, &quot;secretpassword&quot;);
+Call&lt;User&gt; call = loginService.basicLogin();  
+call.enqueue(new Callback&lt;User &gt;() {  
+    @Override
+    public void onResponse(Call&lt;User&gt; call, Response&lt;User&gt; response) {
+        if (response.isSuccessful()) {
+            // user object available
+        } else {
+            // error response, no access to resource?
+        }
+    }
+
+    @Override
+    public void onFailure(Call&lt;User&gt; call, Throwable t) {
+        // something went completely south (like no internet connection)
+        Log.d(&quot;Error&quot;, t.getMessage());
+    }
+}
+</code></pre>
+<p><code>ServiceGenerator</code>方法将会创建一个包含了认证头部的HTTP客户端.只要你调用<code>loginService</code>的<code>basicLogin</code>方法,提供的认证就会被自动得被发送.<br>
+完<br>
+翻译不当指出,请尽情指出,万分感谢.<br>
+原文:https://futurestud.io/tutorials/android-basic-authentication-with-retrofit</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#integrate-basic-authentication-%E5%8A%A0%E5%85%A5%E5%9F%BA%E6%9C%AC%E8%AE%A4%E8%AF%81">Integrate Basic Authentication 加入基本认证</a>
+<ul>
+<li><a href="#retrofit19">Retrofit1.9</a></li>
+<li><a href="#retrofit2">Retrofit2</a></li>
+</ul>
+</li>
+<li><a href="#usage-%E4%BD%BF%E7%94%A8">Usage 使用</a>
+<ul>
+<li><a href="#retrofiit19">Retrofiit1.9</a></li>
+<li><a href="#retrofit2-2">Retrofit2</a></li>
+<li><a href="#retrofit19-2">Retrofit1.9</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/shi-yong-intellij-idea-bian-xie-yi-ge-android-studio-cha-jian">
+              <h3 class="post-title">
+                使用Intellij IDEA 编写一个Android Studio插件
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

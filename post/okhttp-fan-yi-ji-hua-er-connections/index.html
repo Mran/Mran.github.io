@@ -1,0 +1,213 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>okhttp翻译计划（二）--Connections | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              okhttp翻译计划（二）--Connections
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/YaFfFJTwH" class="post-tag">
+                  # 翻译计划
+                </a>
+              
+                <a href="https://mran.github.io/tag/pHVf30Vl-n" class="post-tag">
+                  # okhttp
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>第二部分:Connections</p>
+<!--more-->
+<h2 id="connections"><a href="https://github.com/square/okhttp/wiki/Connections">Connections</a></h2>
+<p>虽然你只提供了URL,OkHttp也可以有三种方式连接你的网站服务器分别是:URL,地址和路由</p>
+<h3 id="urls"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/HttpUrl.html">URLs</a></h3>
+<p>URLs(比如 https://github.com/square/okhttp) 是HTTP和互联网的基础.除了是一个应用于网络上的所有事物的通用的,分散式的命名规则,它还规定了怎样去访问一个网络资源.<br>
+URLs是抽象的:</p>
+<ul>
+<li>它明确规定发起的请求可以是明文的(http)或者是密文的(https),但是没说应该使用哪一种加密算法.它也没规定怎样验证证书(the <a href="http://developer.android.com/reference/javax/net/ssl/HostnameVerifier.html"><code>HostnameVerifier</code></a>)或者应该信任哪个证书(the <a href="http://developer.android.com/reference/org/apache/http/conn/ssl/SSLSocketFactory.html"><code>SSLSocketFactory</code></a>).</li>
+<li>它也没有规定是否应该使用一个特定的代理服务和如何认证一个代理服务</li>
+</ul>
+<p>同时URL也是具体的:每个URL都支持一个具体的路径(比如<code>/squre/okhttp</code>)和查询操作(比如<code>?q=sharks&amp;lang=en</code>).每个网站服务器都有许多URLs.</p>
+<h3 id="address"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Address.html">Address</a></h3>
+<p>地址描述了一个网站服务器(比如<code>github.com</code>)和所有连接服务器所需的静态配置:端口号,HTTPs设置和首选的网络通讯协议(比如HTTP/2或者SPDY).<br>
+共享相同的地址的URLs可能也会共享相同的底层TCP套接字连接.共享同一个连接可以带来可观的性能优势:低延时,高吞吐量(由于TCP缓慢的启动)和节省电量.OkHttp使用了一个连接池<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/ConnectionPool.html">ConnectionPool</a>来自动的复用HTTP/1.x连接,多元的HTTP/2和SPDY连接.<br>
+OkHttp中地址的一部分来自于URL(连接方案(译者注:HTTP或者是HTTPs),主机名,端口),其余的部分来自于<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/OkHttpClient.html">OkHttpClient</a>.</p>
+<h3 id="routes">Routes</h3>
+<p>路由为实际中连接网站服务器提供了必要的动态信息.这都包括要尝试访问的具体IP地址(可向DNS服务器询问得知),使用精确的代理服务器(在使用了<a href="http://developer.android.com/reference/java/net/ProxySelector.html">ProxySelector</a>的情况下)和协商使用哪个版本的TLS(传输层安全协议)(在使用HTTPs连接的情况下).<br>
+可能一个地址可由多个路由连接.举一个例子,一个网站服务器存在于多个数据中心,它就会在DNS的响应中生成多个IP地址.</p>
+<h3 id="connections-2"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Connection.html">Connections</a></h3>
+<p>当你使用Okhttp请求一个URL时,以下是它所做的事情:</p>
+<ol>
+<li>使用URL和配置好的OkHttpClient来生成一个<strong>地址(address)</strong>.这个地址会指定我们将怎样去连接网站服务器.</li>
+<li>尝试用这个地址从**连接池(connection pool)**里取出一个连接</li>
+<li>如果没有在连接池里找到一个已有的连接,它会选择一个**路由(route)**去尝试.这通常意味着要向DNS服务器发送请求来拿到相应的IP地址.然后选择一个TLS版本,必要的话还会选择代理服务器.</li>
+<li>如果这是一个新的路由,它会由一个直接的套接字连接或者一个TLS隧道(HTTPS对HTTP的代理)或是一个直连的TLS连接来构建.这使得TLS握手变得有必要.</li>
+<li>发送HTTP请求并读取响应.</li>
+</ol>
+<p>如果连接出现了问题,OkHttp将会选择另一个路由再次尝试.这使得当服务器端地址的子集不可达时允许OkHttp重新开始.这对于当连接池中的连接过时或者尝试的一个TLS版本不被支持时很有用.<br>
+一旦收到响应,连接将会返回连接池,这会使得连接可以被复用.在一个不活跃的周期之后,连接将被清除.</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#connections">Connections</a>
+<ul>
+<li><a href="#urls">URLs</a></li>
+<li><a href="#address">Address</a></li>
+<li><a href="#routes">Routes</a></li>
+<li><a href="#connections-2">Connections</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/okhttp-fan-yi-ji-hua-calls">
+              <h3 class="post-title">
+                okhttp翻译计划（一）--Calls
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

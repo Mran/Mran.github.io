@@ -1,0 +1,218 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>okhttp翻译计划（一）--Calls | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              okhttp翻译计划（一）--Calls
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/YaFfFJTwH" class="post-tag">
+                  # 翻译计划
+                </a>
+              
+                <a href="https://mran.github.io/tag/pHVf30Vl-n" class="post-tag">
+                  # okhttp
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <hr>
+<p>第一部分:Calls</p>
+<!--more-->
+<h2 id="calls"><a href="https://github.com/square/okhttp/wiki/Calls">Calls</a></h2>
+<p>一个HTTP客户端的工作是接收一个请求并产生一个响应.理论上这很简单,但是在实际中却很棘手.</p>
+<h3 id="requests"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Request.html">Requests</a> 请求</h3>
+<p>每一个HTTP请求都包含一个URL,一个请求方法(比如<code>GET</code>或者<code>POST</code>)和一些消息头(<code>headers</code>).请求还会包含一个结构体(<code>body</code>):特殊内容类型的数据流.(译者注:比如json)</p>
+<h3 id="response"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Response.html">Response</a> 响应</h3>
+<p>请求(<code>Requests</code>)得到的响应(<code>Response</code>)会包含着一个标志码<code>code</code>(比如代表返回成功的200或者代表请求内容不存在的404),一个消息头(<code>headers</code>)和它自己可选的结构体</p>
+<h3 id="rewriting-requests-重写请求">Rewriting Requests 重写请求</h3>
+<p>当你使用OkHttp处理一个HTTP请求时,就是在一个高水平来表述这个请求:&quot;fetch me this URL with these headers.&quot;为了保证正确和确保效率,OkHttp会在发送请求之前重写你的请求.<br>
+OkHttp 可能会添加那些在你的原始请求里缺少的消息头(<code>headers</code>),包括<code>Content-Length</code>,<code>Transfer-Encoding</code>,<code>User-Agent</code>,<code>Host</code>,<code>Content</code>,<code>Content-Type</code>.为了启用明确的响应压缩,它将添加一个<code>Accept-Encoding</code>消息头,除非这个消息头已经存在.如果你已有<code>Cookies</code>,OkHttp也将把<code>Cookies</code>添加到消息头当中.<br>
+某些请求会有一个缓存的响应.当这个缓存的响应是过时的,如果当前的响应有更新,OkHttp会使用<code>GET</code>来下载一个更新的响应.这需要添加一个类似于<code>If-Modified-Since</code>和<code>If-None-Match</code>的消息头.</p>
+<h3 id="rewriting-responses-重写响应">Rewriting Responses 重写响应</h3>
+<p>如果使用了明确的压缩,OkHttp将会删除相应的响应消息头<code>Content-Encoding</code>和<code>Conten-Length</code>.这是因为他们不再适用于解压响应体.  如果一个GET请求成功了,来自网络和缓存的响应将会直接按照规范被合并.</p>
+<h3 id="follow-up-requests-跟进请求">Follow-up Requests 跟进请求</h3>
+<p>当你请求的URL被移除,网站服务器将会返回响应码比如<code>302</code>来指示这个新的URL.OkHttp将会跟进重定向来取回最终的响应结果.<br>
+如果响应表示需要一个授权,那么OkHttp将会在已经配置过的情况下询问<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Authenticator.html"><code>Authenticator</code></a>来满足这个授权.如果提供了凭据,那么OkHttp将会携带着凭据再次尝试请求.</p>
+<h3 id="retrying-requests-重试请求">Retrying Requests 重试请求</h3>
+<p>有时候连接会失败:或许是因为连接池失效不能连接,或许是网站服务器本身不能访问.OkHttp将在其他可用的路由上重试请求.</p>
+<h3 id="calls-2"><a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Call.html">Calls</a></h3>
+<p>经过重写,重定向,跟进和重试,你简单的请求可能会生成很多请求和响应.OkHttp使用<code>Call</code>模型化任务,来满足你的请求过程,尽管中间有许多必须的请求和响应.一般来说不会很多!但那是令人欣慰的知道,即使你的URLs被重定向或者发生故障转移到另一个代理的ip地址,你的代码将会继续工作.<br>
+<code>Calls</code>将被以以下两种方式之一执行.</p>
+<ul>
+<li>同步执行<code>Synchronous</code>:你的线程直到响应返回才是可读取的.</li>
+<li>异步执行<code>Asynchronous</code>:你的请求队列将被安排在任意的线程,然后当响应是可读取的时,获得的回调<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Callback.html"><code>callback</code></a>在另一个线程.</li>
+</ul>
+<p><code>Calls</code>可以在任何线程被取消.如果<code>Call</code>还没有完成,这会导致它失败.当这个<code>Calls</code>被取消时,正在写请求体或正在读取响应体的操作将会得到<code>IOException</code>.</p>
+<h3 id="dispach-调度">Dispach 调度</h3>
+<p>对于同步的<code>calls</code>,你使用自己线程并且需要对你建立多个同时的请求进行管理.太多同时的请求会浪费资源,造成延时.<br>
+对于异步的<code>calls</code>,<a href="http://square.github.io/okhttp/3.x/okhttp/okhttp3/Dispatcher.html"><code>DisPatcher</code></a>是对于大并发请求的策略.你可以对每个网站服务器设置最大的并发数(默认是5)和总数量(默认是64)</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#calls">Calls</a>
+<ul>
+<li><a href="#requests">Requests</a></li>
+<li><a href="#response">Response</a></li>
+<li><a href="#rewriting-requests-%E9%87%8D%E5%86%99%E8%AF%B7%E6%B1%82">Rewriting Requests 重写请求</a></li>
+<li><a href="#rewriting-responses-%E9%87%8D%E5%86%99%E5%93%8D%E5%BA%94">Rewriting Responses 重写响应</a></li>
+<li><a href="#follow-up-requests-%E8%B7%9F%E8%BF%9B%E8%AF%B7%E6%B1%82">Follow-up Requests 跟进请求</a></li>
+<li><a href="#retrying-requests-%E9%87%8D%E8%AF%95%E8%AF%B7%E6%B1%82">Retrying Requests 重试请求</a></li>
+<li><a href="#calls-2">Calls</a></li>
+<li><a href="#dispach-%E8%B0%83%E5%BA%A6">Dispach 调度</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/zuo-yi-ge-dai-hua-dong-dong-hua-de-bottombar">
+              <h3 class="post-title">
+                做一个带滑动动画的bottomBar
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,321 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Telegram阅读心得---页面架构(1) | Gridea</title>
+<meta name="description" content="温故而知新" />
+<link rel="shortcut icon" href="https://mran.github.io/favicon.ico?v=1571020459964">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://mran.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://mran.github.io">
+  <img class="avatar" src="https://mran.github.io/images/avatar.png?v=1571020459964" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Telegram阅读心得---页面架构(1)
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-10-14
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://mran.github.io/tag/f0ajERQ8D" class="post-tag">
+                  # telegram
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="telegram阅读心得-页面架构1">Telegram阅读心得---页面架构(1)</h1>
+<h1 id="获得telegram的源码">获得telegram的源码</h1>
+<ol>
+<li>
+<p>开发环境<br>
+Android Studio 3.3 Canary 3<br>
+Build #AI-181.5281.24.33.4884283, built on July 11, 2018<br>
+JRE: 1.8.0_152-release-1136-b04 amd64<br>
+JVM: OpenJDK 64-Bit Server VM by JetBrains s.r.o<br>
+Windows 10 10.0<br>
+ndk版本ndk 16b</p>
+</li>
+<li>
+<p>clone telegram<br>
+<code>git clone  git@github.com:DrKLO/Telegram.git</code><br>
+clone主仓库的内容之后,要获取子仓库的内容<br>
+<code>git submodule init</code><br>
+<code>git submodule update</code></p>
+</li>
+<li>
+<p>安装ndk<br>
+我使用的是ndk16b,如果你自带的ndk版本不适合,请切换到ndk16b试一试.<br>
+在<code>jni</code>目录下面的<code>Android.mk</code>中,<code>LOCAL_MODULE:=avutil</code>下面添加一句<code>LOCAL_SHORT_COMMANDS:=true</code>,再将<code>'-DVERSION=&quot;1.3.1&quot;'</code>修改为<code>-DVERSION=&quot;1.3.1&quot;</code><br>
+在<code>Application.mk</code>下面添加<code>APP_SHORT_COMMANDS:=true</code></p>
+</li>
+<li>
+<p>修改Module级别下面的build.gradle<br>
+<code>signingConfigs</code>内的内容全部注释掉,这一步是了直接使用android studio 提供的签名,而不必麻烦得使用自己的签名<br>
+<code>buildTypes</code>中和<code>signingConfigs</code>相关的内容注释掉,特别的在<code>buildTypes.debug</code>中的<code>applicationIdSuffix &quot;.beta&quot;</code>也要注释掉</p>
+</li>
+<li>
+<p>在telegram的网站https://my.telegram.org/注册并申请appid.把获得的id填入BuildVars.java的<code>APP_ID</code>和<code>APP_HASH</code>内,<code>HOCKEY_APP_HASH</code>和<code>HOCKEY_APP_HASH_DEBUG</code>就随便填写一个32位的数字就行</p>
+</li>
+<li>
+<p>申请firebase的google-service.json,保存到Module级别的目录下面</p>
+</li>
+<li>
+<p>现在点一下这个神奇的按钮<img src="https://i.loli.net/2019/04/09/5cac04eeebde9.png" alt="UTOOLS1554777325864.png">就可以跑起来啦</p>
+</li>
+<li>
+<p>如果你遇到编译安装后启动失败的问题,请关闭telegram的instant run,</p>
+</li>
+</ol>
+<h1 id="阅读源码一定要有目的性">阅读源码一定要有目的性</h1>
+<p>带着你的问题去看源码,要不然就会陷入,代码的海洋中找不到方向.<br>
+我第一次看源码从哪里入手呢,我选择了页面的架构,先从整体上看看这个app都是有哪些组成的.</p>
+<h2 id="查看androidmianfest">查看<strong>Androidmianfest</strong></h2>
+<p>这里可以看到<code>LaunchActivity</code>就是主入口的activity<br>
+翻遍在Androidmianfest中注册的activity可以发现,activity的数量很少,</p>
+<pre><code>org.telegram.ui.LaunchActivity
+org.telegram.ui.ShareActivity
+org.telegram.ui.ExternalActionActivity
+org.telegram.ui.IntroActivity
+org.telegram.messenger.OpenChatReceiver
+org.telegram.ui.PopupNotificationActivity
+org.telegram.ui.VoIPActivity
+org.telegram.ui.VoIPGroupActivity
+org.telegram.ui.VoIPPermissionActivity
+org.telegram.ui.VoIPFeedbackActivity
+</code></pre>
+<p>可以看到拥有下面这个属性的<code>org.telegram.ui.LaunchActivity</code>就是主activity</p>
+<pre><code>&lt;intent-filter&gt;
+                &lt;action android:name=&quot;android.intent.action.MAIN&quot; /&gt;
+                &lt;category android:name=&quot;android.intent.category.LAUNCHER&quot; /&gt;
+                &lt;category android:name=&quot;android.intent.category.MULTIWINDOW_LAUNCHER&quot; /&gt;
+            &lt;/intent-filter&gt;
+</code></pre>
+<p>那么我们就从这里入手.<br>
+记得,一定要带着问题去看</p>
+<h2 id="问题一-telegram有这么多的页面为什么activity的数量那么少呢">问题一. telegram有这么多的页面,为什么activity的数量那么少呢?</h2>
+<p>首先猜测是不是由一个activity+多个fragement实现的呢?<br>
+这里将telegram调到主页面,可以使用adb命令来看一下<br>
+<code>dumpsys activity org.telegram.messengerok</code><br>
+结果如下</p>
+<pre><code>
+TASK org.telegram.messengerok id=10679 userId=0
+  ACTIVITY org.telegram.messengerok/org.telegram.ui.LaunchActivity 3ceac50 pid=10773
+    Local Activity b23cd31 State:
+      mResumed=true mStopped=false mFinished=false
+      mChangingConfigurations=false
+      mCurrentConfig={1.0 460mcc11mnc [zh_CN] ldltr sw500dp w500dp h953dp 345dpi nrml long hdr port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2057) mAppBounds=Rect(0, 89 - 1080, 2146) mWindowingMode=fullscreen mActivityType=standard} s.31 themeChanged=0 themeChangedFlags=0}
+      mLoadersStarted=true
+      FragmentManager misc state:
+        mHost=android.app.Activity$HostCallbacks@f1b2ff6
+        mContainer=android.app.Activity$HostCallbacks@f1b2ff6
+        mCurState=5 mStateSaved=false mDestroyed=false
+    ViewRoot:
+      mAdded=true mRemoved=false
+      mConsumeBatchedInputScheduled=true
+      mConsumeBatchedInputImmediatelyScheduled=false
+      mPendingInputEventCount=0
+      mProcessInputEventsScheduled=false
+      mTraversalScheduled=true      mIsAmbientMode=false (barrier=16046)
+      android.view.ViewRootImpl$NativePreImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$ImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$NativePostImeInputStage: mQueueLength=0
+    Choreographer:
+      mFrameScheduled=true
+      mLastFrameTime=108084593 (12 ms ago)
+.......
+下面还有一些无关的
+</code></pre>
+<p>这里只给出一部分的输出内容,可以看到,并不是fragment实现的,其实,如果细心一点,在一开始就会发现<code>LaunchActivity extends Activity</code><br>
+<code>LaunchActivity</code>直接继承的是activity,自然不会有fragment来实现了<br>
+那么是用什么来实现的呢<br>
+接着往下看</p>
+<h2 id="查看launchactivity的布局文件">查看<strong>LaunchActivity</strong>的布局文件</h2>
+<p>布局文件可能会带来一些新的思路<br>
+这一个activity足足有3395行,刚开始看到时候可能会有点头大</p>
+<figure data-type="image" tabindex="1"><img src="https://i.loli.net/2019/04/09/5cac4559c5cac.png" alt="UTOOLS1554793816963.png"></figure>
+<p>不要慌,我们先从简单的看起,没错!就是布局文件.<br>
+然后我吭哧吭哧去看哪里<code>setContenview()</code>,然后我就看到了这样的</p>
+<pre><code>setContentView(drawerLayoutContainer, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+</code></pre>
+<p>居然是由代码生成的.<br>
+去看一下<code>res/layout</code>的资源文件,xml的布局文件居然只有4个</p>
+<div align=center>![UTOOLS1554794135657.png](https://i.loli.net/2019/04/09/5cac469841495.png)</div>
+telegram为什么要这么做呢,真相只有一个
+<figure data-type="image" tabindex="2"><img src="https://i.loli.net/2019/04/09/5cac471844490.png" alt="UTOOLS1554794263778.png"></figure>
+<p>我们知道我们通过xml布局文件是通过LayoutInflater来解析生成View的,解析的过程会花掉一部分的时间, 如果是自己通过代码来构建布局,则省去了这个步骤,那么界面的显示就会更加流畅啦.</p>
+<p>有点跑题,现在拉回来</p>
+<p>找到了<code>LaunchActivity</code>的根布局<code>drawerLayoutContainer</code>,看一下它里面都加了什么view,可以看到有<code>sideMenu</code>,<code>actionBarLayout</code>.</p>
+<p><code>sideMenu</code>可以看到,它是一个侧边栏<br>
+<img src="https://i.loli.net/2019/04/09/5cac54a001485.png" alt="UTOOLS1554797727141.png"><br>
+在  <code>sideMenu.setOnItemClickListener()</code>,我看到这里是实现了很多的点击事件,发现了<code>presentFragment(new GroupCreateActivity(args));</code><br>
+跟进这个函数,发现跟到了<code>actionBarLayout.presentFragment()</code>中,<br>
+可以看到这里会把&quot;fragment&quot;加入<code>containerViewBack</code>中(containerViewBack是一个linearLayout),并且在<code>actionBarLayout</code>中维护了一个返回栈<code>fragmentsStack</code></p>
+<pre><code>....
+//
+containerViewBack.addView(fragmentView);
+....
+fragmentsStack.add(fragment);
+....
+
+</code></pre>
+<p>再看一下这个所谓的<code>&quot;fragment&quot;</code> 到底是什么</p>
+<pre><code>    protected View fragmentView;
+    protected ActionBarLayout parentLayout;
+    protected ActionBar actionBar;
+</code></pre>
+<p>在基类<code>BaseFragment</code>中,可以看到它内部有一个fragmentView,也就是被添加到<code>containerViewBack</code>的那个view.<br>
+在<code>actionBarLayout</code>和<code>BaseFragment</code>中都提供了相应的入栈<code>presentFragment()</code>和出栈<code>removeFragmentFromStack()</code>的方法.<br>
+那么到这里我的疑惑就解开了,telegram自己实现了一个类似于官方的fragment的自己的一个fragemnt,从来实现一个activity来管理多个页面的.<br>
+那么这篇就讲到这里啦.<br>
+晚安</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#telegram%E9%98%85%E8%AF%BB%E5%BF%83%E5%BE%97-%E9%A1%B5%E9%9D%A2%E6%9E%B6%E6%9E%841">Telegram阅读心得---页面架构(1)</a></li>
+<li><a href="#%E8%8E%B7%E5%BE%97telegram%E7%9A%84%E6%BA%90%E7%A0%81">获得telegram的源码</a></li>
+<li><a href="#%E9%98%85%E8%AF%BB%E6%BA%90%E7%A0%81%E4%B8%80%E5%AE%9A%E8%A6%81%E6%9C%89%E7%9B%AE%E7%9A%84%E6%80%A7">阅读源码一定要有目的性</a>
+<ul>
+<li><a href="#%E6%9F%A5%E7%9C%8Bandroidmianfest">查看<strong>Androidmianfest</strong></a></li>
+<li><a href="#%E9%97%AE%E9%A2%98%E4%B8%80-telegram%E6%9C%89%E8%BF%99%E4%B9%88%E5%A4%9A%E7%9A%84%E9%A1%B5%E9%9D%A2%E4%B8%BA%E4%BB%80%E4%B9%88activity%E7%9A%84%E6%95%B0%E9%87%8F%E9%82%A3%E4%B9%88%E5%B0%91%E5%91%A2">问题一. telegram有这么多的页面,为什么activity的数量那么少呢?</a></li>
+<li><a href="#%E6%9F%A5%E7%9C%8Blaunchactivity%E7%9A%84%E5%B8%83%E5%B1%80%E6%96%87%E4%BB%B6">查看<strong>LaunchActivity</strong>的布局文件</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://mran.github.io/post/okhttp-fan-yi-ji-hua-si-interceptors">
+              <h3 class="post-title">
+                okhttp翻译计划（四）--Interceptors
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://mran.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+
+  let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+  // This should probably be throttled.
+  // Especially because it triggers during smooth scrolling.
+  // https://lodash.com/docs/4.17.10#throttle
+  // You could do like...
+  // window.addEventListener("scroll", () => {
+  //    _.throttle(doThatStuff, 100);
+  // });
+  // Only not doing it here to keep this Pen dependency-free.
+
+  window.addEventListener("scroll", event => {
+    let fromTop = window.scrollY;
+
+    mainNavLinks.forEach((link, index) => {
+      let section = document.getElementById(decodeURI(link.hash).substring(1));
+      let nextSection = null
+      if (mainNavLinks[index + 1]) {
+        nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+      }
+      if (section.offsetTop <= fromTop) {
+        if (nextSection) {
+          if (nextSection.offsetTop > fromTop) {
+            link.classList.add("current");
+          } else {
+            link.classList.remove("current");    
+          }
+        } else {
+          link.classList.add("current");
+        }
+      } else {
+        link.classList.remove("current");
+      }
+    });
+  });
+
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>
