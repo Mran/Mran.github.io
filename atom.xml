@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mran.github.io</id>
-    <title>Gridea</title>
-    <updated>2019-10-14T03:06:43.191Z</updated>
+    <title>烈日当夜</title>
+    <updated>2019-10-14T03:06:50.644Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mran.github.io"/>
     <link rel="self" href="https://mran.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
+    <subtitle>赵客缦胡缨，吴钩霜雪明。
+银鞍照白马，飒沓如流星。
+十步杀一人，千里不留行。
+事了拂衣去，深藏身与名。</subtitle>
     <logo>https://mran.github.io/images/avatar.png</logo>
     <icon>https://mran.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2019, Gridea</rights>
+    <rights>All rights reserved 2019, 烈日当夜</rights>
     <entry>
         <title type="html"><![CDATA[Flutter动画widget合集（2）]]></title>
         <id>https://mran.github.io/post/flutter-dong-hua-widget-he-ji-2</id>
